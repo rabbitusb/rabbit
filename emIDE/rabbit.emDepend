@@ -8,11 +8,18 @@
 	<reent.h>
 	<sys/stat.h>
 
-1517050608 source:d:\gj_folder\x_plan\code\rabbit\src\main.c
+1517057605 source:d:\gj_folder\x_plan\code\rabbit\src\main.c
 
-1517050686 source:d:\gj_folder\x_plan\code\rabbit\src\startup.s
+1517056144 source:d:\gj_folder\x_plan\code\rabbit\src\startup.s
 
 1364381714 source:d:\gj_folder\x_plan\code\rabbit\src\syscalls.c
+	<stdlib.h>
+	<reent.h>
+	<sys/stat.h>
+
+1517058523 source:d:\gj_folder\x_plan\code\rabbit\src\boot.c
+
+1364381714 source:d:\gj_folder\x_plan\code\rabbit\emide\syscalls.c
 	<stdlib.h>
 	<reent.h>
 	<sys/stat.h>

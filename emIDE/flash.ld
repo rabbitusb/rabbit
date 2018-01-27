@@ -44,7 +44,7 @@ _Min_Stack_Size = 0x0;  /* required amount of stack */
  *
  *  Code and data sections
  ************************************************************************************/
-ENTRY(Reset_Handler)
+ENTRY(reset_handler)
 
 SECTIONS
 {

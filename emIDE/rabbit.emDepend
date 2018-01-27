@@ -1,0 +1,19 @@
+# depslib dependency file v1.0
+1517044012 source:d:\gj_folder\x_plan\code\src\main.c
+
+1517044145 source:d:\gj_folder\x_plan\code\src\startup.s
+
+1364381714 source:d:\gj_folder\x_plan\code\src\syscalls.c
+	<stdlib.h>
+	<reent.h>
+	<sys/stat.h>
+
+1517044012 source:d:\gj_folder\x_plan\code\rabbit\src\main.c
+
+1517044145 source:d:\gj_folder\x_plan\code\rabbit\src\startup.s
+
+1364381714 source:d:\gj_folder\x_plan\code\rabbit\src\syscalls.c
+	<stdlib.h>
+	<reent.h>
+	<sys/stat.h>
+

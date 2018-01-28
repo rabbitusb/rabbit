@@ -77,10 +77,14 @@
 		<Unit filename="../src/boot.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../src/hal/MKL26Z4.h" />
+		<Unit filename="../src/hal/hal_watchdog.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/hal/hal_watchdog.h" />
 		<Unit filename="../src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="flash.ld" />
 		<Unit filename="syscalls.c">
 			<Option compilerVar="CC" />
 		</Unit>

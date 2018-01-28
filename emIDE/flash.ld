@@ -28,166 +28,110 @@
  *            __stack_end__
  ************************************************************************************/
 
-/************************************************************************************
- *
- *  Memory regions and required amount of heap and stack
- ************************************************************************************/
+
 MEMORY
 {
-  FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 512K
-  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 16K
+  FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 128K
+  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 8K
 }
 _Min_Heap_Size  = 0x0;   /* required amount of heap  */
-_Min_Stack_Size = 0x0;  /* required amount of stack */
+_Min_Stack_Size = 0x400;  /* required amount of stack */
 
-/************************************************************************************
- *
- *  Code and data sections
- ************************************************************************************/
 ENTRY(reset_handler)
 
 SECTIONS
 {
-/************************************************************************************
- *
- *  text section (code)
- *  Starts with startup code and vectors
- *  Goes into FLASH
- ************************************************************************************/
-	.text :
-	{
-    /* Startup code */
-		KEEP(*(.isr_vector))
+    /************************************************************************************
+     *  text section (code)
+     *  Starts with startup code and vectors
+     *  Goes into FLASH
+     ************************************************************************************/
+    .text :
+    {
+        /* Startup code */
+        KEEP(*(.isr_vector))
 
-    /* Code section */
-		*(.text*)
+        /* Code section */
+        *(.text*)
 
-		KEEP(*(.init))
-		KEEP(*(.fini))
+        /* Rodata section (constants, strincs, ...) */
+        *(.rodata*)
 
-		/* .ctors */
-		*crtbegin.o(.ctors)
-		*crtbegin?.o(.ctors)
-		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
-		*(SORT(.ctors.*))
-		*(.ctors)
+    } > FLASH
 
-		/* .dtors */
- 		*crtbegin.o(.dtors)
- 		*crtbegin?.o(.dtors)
- 		*(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
- 		*(SORT(.dtors.*))
- 		*(.dtors)
+    .ARM.extab :
+    {
+        *(.ARM.extab* .gnu.linkonce.armextab.*)
+    } > FLASH
 
-    /* Rodata section (constants, strincs, ...) */
-		*(.rodata*)
+    __exidx_start = .;
+    .ARM.exidx :
+    {
+        *(.ARM.exidx* .gnu.linkonce.armexidx.*)
+    } > FLASH
+    __exidx_end = .;
 
-		KEEP(*(.eh_frame*))
-	} > FLASH
+    .ARM.attributes :
+    {
+        *(.ARM.attributes)
+    } > FLASH
 
-	.ARM.extab :
-	{
-		*(.ARM.extab* .gnu.linkonce.armextab.*)
-	} > FLASH
+    /* Global symbol at the end of code (text section) */
+    . = ALIGN(4);
+    __etext = .;
 
-	__exidx_start = .;
-	.ARM.exidx :
-	{
-		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} > FLASH
-	__exidx_end = .;
+    /************************************************************************************
+     *  data section
+     *  Goes into RAM
+     ************************************************************************************/
+    .data : AT (__etext)
+    {
+        /* Global symbol at start of data */
+        . = ALIGN(4);
+        __data_start__ = .;
+        *(.data*)
+        __data_end__ = .;
 
-  .ARM.attributes : {
-    *(.ARM.attributes)
-  } > FLASH
+    } > RAM
 
-  /* Global symbol at the end of code (text section) */
-	__etext = .;
+    /************************************************************************************
+     *  bss section (Uninitialized data)
+     *  Goes into RAM
+     ************************************************************************************/
+    .bss :
+    {
+        . = ALIGN(4);
+        __bss_start__ = .;
+        *(.bss*)
+        . = ALIGN(4);
+        __bss_end__ = .;
+    } > RAM
 
-/************************************************************************************
- *
- *  data section
- *  Goes into RAM
- ************************************************************************************/
-	.data : AT (__etext)
-	{
-    /* Global symbol at start of data */
-		__data_start__ = .;
-		*(vtable)
-		*(.data*)
+    /************************************************************************************
+     *  user_heap_stack section
+     *  Check that there is enough RAM left for stack and heap
+     ************************************************************************************/
+    ._user_heap_stack :
+    {
+        . = ALIGN(8);
+        __heap_start__ = .;
+        . = . + _Min_Heap_Size;
+        __heap_end__ = .;
+        . = ALIGN(8);
+        __stack_start__ = .;
+        . = . + _Min_Stack_Size;
+        __stack_end__ = .;
+        _estack = .;
+        . = ALIGN(8);
+    } >RAM
 
-		. = ALIGN(4);
-		/* preinit data */
-		PROVIDE_HIDDEN (__preinit_array_start = .);
-		KEEP(*(.preinit_array))
-		PROVIDE_HIDDEN (__preinit_array_end = .);
-
-		. = ALIGN(4);
-		/* init data */
-		PROVIDE_HIDDEN (__init_array_start = .);
-		KEEP(*(SORT(.init_array.*)))
-		KEEP(*(.init_array))
-		PROVIDE_HIDDEN (__init_array_end = .);
-
-
-		. = ALIGN(4);
-		/* finit data */
-		PROVIDE_HIDDEN (__fini_array_start = .);
-		KEEP(*(SORT(.fini_array.*)))
-		KEEP(*(.fini_array))
-		PROVIDE_HIDDEN (__fini_array_end = .);
-
-		KEEP(*(.jcr*))
-		. = ALIGN(4);
-		/* Global symbol at end of data */
-		__data_end__ = .;
-
-	} > RAM
-
-/************************************************************************************
- *
- *  bss section (Uninitialized data)
- *  Goes into RAM
- ************************************************************************************/
-	.bss :
-	{
-		. = ALIGN(4);
-    /* Global symbol at start of bss */
-		__bss_start__ = .;
-		*(.bss*)
-		*(COMMON)
-		. = ALIGN(4);
-    /* Global symbol at end of bss */
-		__bss_end__ = .;
-	} > RAM
-
-/************************************************************************************
- *
- *  user_heap_stack section
- *  Check that there is enough RAM left for stack and heap
- ************************************************************************************/
-  ._user_heap_stack :
-  {
-    . = ALIGN(8);
-    __heap_start__ = .;
-    . = . + _Min_Heap_Size;
-    __heap_end__ = .;
-    . = ALIGN(8);
-    __stack_start__ = .;
-    . = . + _Min_Stack_Size;
-    __stack_end__ = .;
-    _estack = .;
-    . = ALIGN(8);
-  } >RAM
-
-/************************************************************************************
- *
- *  Remove information from the standard libraries
- ************************************************************************************/
-  /DISCARD/ :
-  {
-    libc.a ( * )
-    libm.a ( * )
-    libgcc.a ( * )
-  }
+    /************************************************************************************
+     *  Remove information from the standard libraries
+     ************************************************************************************/
+    /DISCARD/ :
+    {
+        libc.a ( * )
+        libm.a ( * )
+        libgcc.a ( * )
+    }
 }

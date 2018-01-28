@@ -37,13 +37,14 @@ void uart_ip_init(void)
     UART0->BDH &= ~UART0_BDH_SBNS_MASK;
     UART0->BDH |= UART0_BDH_SBNS(0);
     UART0->C2  |= UART0_C2_TE_MASK | UART0_C2_RE_MASK;
-
-    UART0->D = 'a'; while (!(UART0->S1 & UART0_S1_TDRE_MASK));
-    UART0->D = 'b'; while (!(UART0->S1 & UART0_S1_TDRE_MASK));
-    UART0->D = 'c'; while (!(UART0->S1 & UART0_S1_TDRE_MASK));
 }
 void uart_init(void)
 {
     uart_pin_init();
     uart_ip_init();
+}
+void uart_send_char(char c)
+{
+    while (!(UART0->S1 & UART0_S1_TDRE_MASK));
+    UART0->D = c;
 }

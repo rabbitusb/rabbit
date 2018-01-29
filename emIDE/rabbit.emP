@@ -78,6 +78,22 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/hal/MKL26Z4.h" />
+		<Unit filename="../src/hal/hal_mcg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/hal/hal_mcg.h" />
+		<Unit filename="../src/hal/hal_nvic.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/hal/hal_nvic.h" />
+		<Unit filename="../src/hal/hal_uart.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/hal/hal_uart.h" />
+		<Unit filename="../src/hal/hal_usb.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/hal/hal_usb.h" />
 		<Unit filename="../src/hal/hal_watchdog.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -85,6 +101,11 @@
 		<Unit filename="../src/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../src/print/print.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/print/print.h" />
+		<Unit filename="flash.ld" />
 		<Unit filename="syscalls.c">
 			<Option compilerVar="CC" />
 		</Unit>

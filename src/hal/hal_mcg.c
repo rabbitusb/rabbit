@@ -6,7 +6,7 @@
 
 
 
-void mcg_init(void)
+void hal_mcg_init(void)
 {
     SIM->CLKDIV1 = 0x10030000U;
 

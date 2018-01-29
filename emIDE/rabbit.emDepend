@@ -8,9 +8,10 @@
 	<reent.h>
 	<sys/stat.h>
 
-1517160380 source:d:\gj_folder\x_plan\code\rabbit\src\main.c
+1517236538 source:d:\gj_folder\x_plan\code\rabbit\src\main.c
 	".\\hal\\hal_uart.h"
 	".\\hal\\hal_mcg.h"
+	".\\print\\print.h"
 
 1517056144 source:d:\gj_folder\x_plan\code\rabbit\src\startup.s
 
@@ -31,21 +32,36 @@
 	"stdint.h"
 	"MKL26Z4.h"
 
-1517159220 d:\gj_folder\x_plan\code\rabbit\src\hal\mkl26z4.h
+1517241342 d:\gj_folder\x_plan\code\rabbit\src\hal\mkl26z4.h
 
 1517100991 d:\gj_folder\x_plan\code\rabbit\src\\hal\\hal_watchdog.h
 
-1517119829 source:d:\gj_folder\x_plan\code\rabbit\src\print\print.c
+1517236546 source:d:\gj_folder\x_plan\code\rabbit\src\print\print.c
+	<stdarg.h>
+	<stdio.h>
+	"..\\hal\\hal_uart.h"
 
-1517160348 source:d:\gj_folder\x_plan\code\rabbit\src\hal\hal_uart.c
+1517236519 source:d:\gj_folder\x_plan\code\rabbit\src\hal\hal_uart.c
 	"stdint.h"
 	"MKL26Z4.h"
 
-1517160356 d:\gj_folder\x_plan\code\rabbit\src\\hal\\hal_uart.h
+1517236511 d:\gj_folder\x_plan\code\rabbit\src\\hal\\hal_uart.h
 
-1517160241 source:d:\gj_folder\x_plan\code\rabbit\src\hal\hal_mcg.c
+1517236501 source:d:\gj_folder\x_plan\code\rabbit\src\hal\hal_mcg.c
 	"stdint.h"
 	"MKL26Z4.h"
 
-1517157687 d:\gj_folder\x_plan\code\rabbit\src\\hal\\hal_mcg.h
+1517236493 d:\gj_folder\x_plan\code\rabbit\src\\hal\\hal_mcg.h
+
+1517234876 d:\gj_folder\x_plan\code\rabbit\src\\print\\print.h
+
+1517242877 source:d:\gj_folder\x_plan\code\rabbit\src\hal\hal_usb.c
+	"stdint.h"
+	"MKL26Z4.h"
+	"hal_nvic.h"
+
+1517242739 source:d:\gj_folder\x_plan\code\rabbit\src\hal\hal_nvic.c
+	"stdint.h"
+
+1517242031 d:\gj_folder\x_plan\code\rabbit\src\hal\hal_nvic.h
 

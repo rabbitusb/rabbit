@@ -1,3 +1,3 @@
 
-void uart_init(void);
-void uart_send_char(char c);
+void hal_uart_init(void);
+void hal_uart_send_char(char c);

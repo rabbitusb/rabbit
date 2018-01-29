@@ -2,18 +2,18 @@
 
 #include ".\\hal\\hal_uart.h"
 #include ".\\hal\\hal_mcg.h"
+#include ".\\print\\print.h"
 
 int main(void)
 {
     int cnt;
     cnt = 0;
 
-    mcg_init();  // Set system clock to 48MHz
-    uart_init(); // Set uart baudrate to 115200
-    uart_send_char('a');
-    uart_send_char('b');
-    uart_send_char('c');
-    uart_send_char('d');
+    hal_mcg_init();  // Set system clock to 48MHz
+    hal_uart_init(); // Set uart baudrate to 115200
+
+    rabbit_printf("hello, rabbit.\n");
+    rabbit_printf("hello, rabbit.\n");
 
     while (1)
     {

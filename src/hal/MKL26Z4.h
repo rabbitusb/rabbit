@@ -50,6 +50,8 @@ typedef struct
 #define SIM_SOPT5_UART0RXSRC(x)                  (((uint32_t)(((uint32_t)(x)) << SIM_SOPT5_UART0RXSRC_SHIFT)) & SIM_SOPT5_UART0RXSRC_MASK)
 
 #define SIM_SCGC4_UART0_MASK                     (0x400U)
+#define SIM_SCGC4_USBOTG_MASK                    (0x40000U)
+
 #define SIM_SCGC5_PORTA_MASK                     (0x200U)
 
 
@@ -155,4 +157,79 @@ typedef struct
 
 #define MCG_BASE                                 (0x40064000u)
 #define MCG                                      ((MCG_Type *)MCG_BASE)
+
+
+// -----------------------------------------------
+// USB
+// -----------------------------------------------
+typedef struct
+{
+    uint8_t PERID;
+    uint8_t RESERVED_0[3];
+    uint8_t IDCOMP;
+    uint8_t RESERVED_1[3];
+    uint8_t REV;
+    uint8_t RESERVED_2[3];
+    uint8_t ADDINFO;
+    uint8_t RESERVED_3[3];
+    uint8_t OTGISTAT;
+    uint8_t RESERVED_4[3];
+    uint8_t OTGICR;
+    uint8_t RESERVED_5[3];
+    uint8_t OTGSTAT;
+    uint8_t RESERVED_6[3];
+    uint8_t OTGCTL;
+    uint8_t RESERVED_7[99];
+    uint8_t ISTAT;
+    uint8_t RESERVED_8[3];
+    uint8_t INTEN;
+    uint8_t RESERVED_9[3];
+    uint8_t ERRSTAT;
+    uint8_t RESERVED_10[3];
+    uint8_t ERREN;
+    uint8_t RESERVED_11[3];
+    uint8_t STAT;
+    uint8_t RESERVED_12[3];
+    uint8_t CTL;
+    uint8_t RESERVED_13[3];
+    uint8_t ADDR;
+    uint8_t RESERVED_14[3];
+    uint8_t BDTPAGE1;
+    uint8_t RESERVED_15[3];
+    uint8_t FRMNUML;
+    uint8_t RESERVED_16[3];
+    uint8_t FRMNUMH;
+    uint8_t RESERVED_17[3];
+    uint8_t TOKEN;
+    uint8_t RESERVED_18[3];
+    uint8_t SOFTHLD;
+    uint8_t RESERVED_19[3];
+    uint8_t BDTPAGE2;
+    uint8_t RESERVED_20[3];
+    uint8_t BDTPAGE3;
+    uint8_t RESERVED_21[11];
+    struct
+    {
+        uint8_t ENDPT;
+        uint8_t RESERVED_0[3];
+    } ENDPOINT[16];
+    uint8_t USBCTRL;
+    uint8_t RESERVED_22[3];
+    uint8_t OBSERVE;
+    uint8_t RESERVED_23[3];
+    uint8_t CONTROL;
+    uint8_t RESERVED_24[3];
+    uint8_t USBTRC0;
+    uint8_t RESERVED_25[7];
+    uint8_t USBFRMADJUST;
+} USB_Type;
+
+#define USB0_BASE                                (0x40072000u)
+#define USB0                                     ((USB_Type *)USB0_BASE)
+
+#define USB_CONTROL_DPPULLUPNONOTG_MASK          (0x10U)
+#define USB_CTL_ODDRST_MASK                      (0x2U)
+#define USB_CTL_TXSUSPENDTOKENBUSY_MASK          (0x20U)
+#define USB_CTL_USBENSOFEN_MASK                  (0x1U)
+
 

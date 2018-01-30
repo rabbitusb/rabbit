@@ -3,7 +3,7 @@
 #include "stdint.h"
 #include "MKL26Z4.h"
 
-
+#define MCG_S_CLKST_VAL ((MCG->S & MCG_S_CLKST_MASK) >> MCG_S_CLKST_SHIFT)
 
 
 void hal_mcg_init(void)

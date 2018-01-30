@@ -4,6 +4,8 @@
 #include ".\\hal\\hal_mcg.h"
 #include ".\\print\\print.h"
 
+void usb_main (void);
+
 int main(void)
 {
     int cnt;
@@ -15,6 +17,7 @@ int main(void)
     rabbit_printf("hello, rabbit.\n");
     rabbit_printf("hello, rabbit.\n");
 
+    usb_main();
     while (1)
     {
         cnt++;

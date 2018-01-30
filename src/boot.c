@@ -49,6 +49,8 @@ void default_handler(void)
     while(1);
 }
 
+void usb0_handler(void);
+
 /*
     Interrupt vector table placed at 0x0000_0000
 */
@@ -95,7 +97,7 @@ volatile const int int_vec[] __attribute__((section(".isr_vector"))) =
     (const int)default_handler, // 0x25
     (const int)default_handler, // 0x26
     (const int)default_handler, // 0x27
-    (const int)default_handler, // 0x28
+    (const int)usb0_handler,    // 0x28
     (const int)default_handler, // 0x29
     (const int)default_handler, // 0x2a
     (const int)default_handler, // 0x2b

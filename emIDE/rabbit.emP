@@ -105,6 +105,21 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/print/print.h" />
+		<Unit filename="../src/usb/usb_cdc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/usb/usb_cdc.h" />
+		<Unit filename="../src/usb/usb_debug.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/usb/usb_debug.h" />
+		<Unit filename="../src/usb/usb_driver.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/usb/usb_driver.h" />
+		<Unit filename="../src/usb/usb_main.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="flash.ld" />
 		<Unit filename="syscalls.c">
 			<Option compilerVar="CC" />

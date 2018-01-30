@@ -149,6 +149,7 @@ static void handler_stall(void)
 
 static void handler_reset(void)
 {
+    //driver_usb_init();
     /* Disable all data EP registers */
     USB0->ENDPOINT[1].ENDPT = 0x00;
     USB0->ENDPOINT[2].ENDPT = 0x00;
@@ -189,8 +190,8 @@ static void handler_reset(void)
 
     // USB Interrupt Enablers
     USB0->INTEN |= USB_INTEN_TOKDNEEN_MASK |
-                  USB_INTEN_ERROREN_MASK  |
-                  USB_INTEN_USBRSTEN_MASK;
+                   USB_INTEN_ERROREN_MASK  |
+                   USB_INTEN_USBRSTEN_MASK;
 }
 
 static void usb_clock_init(void)

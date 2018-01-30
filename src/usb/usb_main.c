@@ -44,7 +44,7 @@ void usb_main (void)
     driver_usb_init();
     cdc_init(call_back_get_data);
     cdc_wait_enumerate();
-    debug_show();
+    //debug_show();
     while(1)
     {
         wait_data_arrive();

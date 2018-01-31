@@ -113,6 +113,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/usb/usb_debug.h" />
+		<Unit filename="../src/usb/usb_device.h" />
 		<Unit filename="../src/usb/usb_driver.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -120,6 +121,11 @@
 		<Unit filename="../src/usb/usb_main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../src/usb/usb_stack_device.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/usb/usb_stack_device.h" />
+		<Unit filename="../src/usb/usb_stack_spec.h" />
 		<Unit filename="flash.ld" />
 		<Unit filename="syscalls.c">
 			<Option compilerVar="CC" />

@@ -9,6 +9,7 @@ enum ENUM_DIRECTION
 };
 void                driver_usb_init(void);
 void                driver_usb_send(unsigned char ep, unsigned char *buf, unsigned int buf_len);
+void                driver_usb_send_continous(void);
 unsigned char       driver_usb_receive(unsigned char, unsigned char*);
 void                driver_set_addr(unsigned char addr);
 unsigned char       driver_get_pid(void);

@@ -8,7 +8,8 @@
 #include "usb_driver.h"
 #include "usb_cdc.h"
 #include "usb_stack_device.h"
-
+#include "usb_debug.h"
+#include "usb_spec.h"
 
 #define USB_IRQ_NUMBER 0x18
 
@@ -18,9 +19,11 @@
     one end point has two direction, then 32 bytes
     up to 16 end point, 32*16 = 512 bytes
 */
-#define BUF_SIZE_OF_ONE_EP 64
 
-#define PACKAGE_SIZE 64 //64?
+#define EP_PACKAGE_SIZE 8 //64?
+#define BUF_SIZE_OF_ONE_EP EP_PACKAGE_SIZE
+
+
 
 #define OWN_MCU 0x00
 #define OWN_SIE 0x80
@@ -116,25 +119,22 @@ void driver_set_toggle_data1(void)
     toggle_data = TOGGLE_UDATA1;
 }
 
-static void load_to_send_buffer_manager(uint8_t *data, uint32_t size)
+static void s_store(uint8_t *data, uint32_t size)
 {
-    if(counter == 0)
-    {
-        // load happens when counter is 0
-        p_data  = data;
-        counter = size;
-    }
+    // load happens when counter is 0
+    p_data  = data;
+    counter = size;
 }
 
-static uint8_t load_from_send_buffer_manager(void)
+static uint8_t s_load(void)
 {
     uint32_t r;
 
-    if(counter > PACKAGE_SIZE)
+    if(counter > EP_PACKAGE_SIZE)
     {
         // BUF_SIZE_OF_ONE_EP is the maximum package length for one transaction
-        r        = PACKAGE_SIZE;
-        counter -= PACKAGE_SIZE;
+        r        = EP_PACKAGE_SIZE;
+        counter -= EP_PACKAGE_SIZE;
     }
     else
     {
@@ -147,8 +147,10 @@ static uint8_t load_from_send_buffer_manager(void)
 
 static void load_rx_para(S_USB_PARA * usb_para)
 {
-    usb_para->ep  = USB0->STAT>>4;
-    usb_para->odd = (USB0->STAT>>2) & 0x01;
+    usb_para->ep  = (USB0->STAT>>USB_STAT_ENDP_SHIFT) & 0x0f;
+    usb_para->odd = (USB0->STAT>>USB_STAT_ODD_SHIFT) & 0x01;
+
+
     switch(usb_para->ep)
     {
         case 0:
@@ -163,8 +165,20 @@ static void load_rx_para(S_USB_PARA * usb_para)
 
     usb_para->index += usb_para->odd;
     usb_para->buf    = ep_buf + BUF_SIZE_OF_ONE_EP * usb_para->index;
-    usb_para->pid    = bd_table[usb_para->index].bd_flag.flag2.pid;
-    usb_para->len    = bd_table[usb_para->index].cnt;
+
+
+    if((USB0->STAT>>USB_STAT_TX_SHIFT) & 0x01)
+    {
+        // tx
+        usb_para->pid = PID_IN;
+        usb_para->len = 0;
+    }
+    else
+    {
+        // rx
+        usb_para->pid = bd_table[usb_para->index].bd_flag.flag2.pid;
+        usb_para->len = bd_table[usb_para->index].cnt;
+    }
 }
 void  driver_usb_update_bd(S_USB_PARA * usb_para)
 {
@@ -179,21 +193,21 @@ static void s_bd_init(void)
     // EP0 OUT BDT Settings
     bd_table[index_ep0_out_even].cnt           = BUF_SIZE_OF_ONE_EP;
     bd_table[index_ep0_out_even].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_out_even);
-    bd_table[index_ep0_out_even].bd_flag._byte = 0x80; //0xc0; //TOGGLE_DATA1; // OWN_SIE;
+    bd_table[index_ep0_out_even].bd_flag._byte = OWN_SIE;
 
     // EP0 OUT BDT Settings
-    bd_table[index_ep0_out_odd].cnt           = BUF_SIZE_OF_ONE_EP;
-    bd_table[index_ep0_out_odd].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_out_odd);
-    bd_table[index_ep0_out_odd].bd_flag._byte = 0x80; //0xc0; //TOGGLE_DATA1; // OWN_SIE;
+    bd_table[index_ep0_out_odd].cnt            = BUF_SIZE_OF_ONE_EP;
+    bd_table[index_ep0_out_odd].addr           = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_out_odd);
+    bd_table[index_ep0_out_odd].bd_flag._byte  = OWN_SIE;
 
     // EP0 IN BDT Settings
-    bd_table[index_ep0_in_even].cnt           = BUF_SIZE_OF_ONE_EP;
-    bd_table[index_ep0_in_even].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_in_even);
-    bd_table[index_ep0_in_even].bd_flag._byte = OWN_MCU; // TOGGLE_DATA0; //OWN_MCU;
+    bd_table[index_ep0_in_even].cnt            = 0;
+    bd_table[index_ep0_in_even].addr           = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_in_even);
+    bd_table[index_ep0_in_even].bd_flag._byte  = OWN_MCU; // TOGGLE_DATA0; //OWN_MCU;
     // EP0 IN BDT Settings
-    bd_table[index_ep0_in_odd].cnt            = (BUF_SIZE_OF_ONE_EP);
-    bd_table[index_ep0_in_odd].addr           = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_in_odd);
-    bd_table[index_ep0_in_odd].bd_flag._byte  = OWN_MCU;  // TOGGLE_DATA0; //OWN_MCU;
+    bd_table[index_ep0_in_odd].cnt             = 0;
+    bd_table[index_ep0_in_odd].addr            = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_in_odd);
+    bd_table[index_ep0_in_odd].bd_flag._byte   = OWN_MCU;  // TOGGLE_DATA0; //OWN_MCU;
 }
 static void s_handler_stall(void)
 {
@@ -202,9 +216,12 @@ static void s_handler_stall(void)
 
     USB0->ISTAT |= USB_ISTAT_STALL_MASK;
 }
+
 static void s_handler_reset(void)
 {
-
+    s_bd_init();
+    memset(usb_tx_odd, 0, sizeof(usb_tx_odd));
+    USB0->CTL |= USB_CTL_ODDRST_MASK;
 }
 
 static void s_handler_token(void)
@@ -213,27 +230,16 @@ static void s_handler_token(void)
 
     // load pid, buf, len
     load_rx_para(&usb_para);
+    cdc_entry(&usb_para);
 
-    if(USB0->STAT & 0x08)
-        // tx
-        cdc_entry(&usb_para, direction_tx);
-        // usb_stack_device_entry_tx(ep);
-    else
-    {
-        // rx
-        cdc_entry(&usb_para, direction_rx);
-    }
+    /*
+    usb_stack_device_entry_rx(ep,
+                              bd_table[index_ep0_out_even + ep *4 + 0].bd_flag.flag2.pid,
+                              get_ep_rx_buf(ep),
+                              get_data_len(ep));
+                              // */
 
-        /*
-        usb_stack_device_entry_rx(ep,
-                                  bd_table[index_ep0_out_even + ep *4 + 0].bd_flag.flag2.pid,
-                                  get_ep_rx_buf(ep),
-                                  get_data_len(ep));
-                                  // */
-
-    USB0->ISTAT |=  USB_ISTAT_TOKDNE_MASK;
-    USB0->CTL   &= ~USB_CTL_TXSUSPENDTOKENBUSY_MASK;
-    //bd_table[index_ep0_out_even].bd_flag._byte = TOGGLE_DATA0;
+    USB0->CTL &= ~USB_CTL_TXSUSPENDTOKENBUSY_MASK;
 }
 static void s_usb_clock_init(void)
 {
@@ -242,18 +248,21 @@ static void s_usb_clock_init(void)
 
     SIM->SCGC4 |= SIM_SCGC4_USBOTG_MASK;
 }
-static void s_usb_reg_init(void)
+static void s_usb_regulator_init(void)
 {
     SIM->SOPT1 |= (1u<<SIM_SOPT1_USBREGEN_SHIFT);
 }
 // ------------------------------------------------
-int tt_cnt = 0;
+
 void driver_usb_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
 {
     uint8_t  *p;
     uint32_t len;
     uint32_t ep_entry;
-tt_cnt++;
+    debug_record_string("usb_send, ");
+    debug_record((char*)&buf_len, 4);
+    debug_record_string("|| ");
+
     /*
         TX         ODD
         USB->M     0
@@ -267,14 +276,10 @@ tt_cnt++;
 
     p = ep_buf + ep_entry*BUF_SIZE_OF_ONE_EP;  // 32 byte each ep.
 
-    // give buf and buf len.
-    load_to_send_buffer_manager(buf, buf_len);
+    s_store(buf, buf_len);
+    len = s_load();
 
-    // get then len for sending
-    len = load_from_send_buffer_manager();
-
-    //if(len == 0)
-    //    return;
+    debug_record((char*)&len, 4);
 
     bd_table[ep_entry].cnt = (unsigned short)len;
 
@@ -288,13 +293,14 @@ tt_cnt++;
         bd_table[ep_entry].bd_flag._byte = toggle_data;
         update_toggle_data();
     }
-
+/*
     if(ep == ep_in)
     {
         // send data to CDC
         update_toggle_data();
         bd_table[ep_entry].bd_flag._byte = toggle_data;
     }
+*/
 }
 
 
@@ -304,6 +310,7 @@ void driver_usb_send_continous(uint8_t ep)
     uint32_t  len;
     uint32_t  ep_entry;
 
+    debug_record_string("send_conti, ");
     /*
         TX         ODD
         USB->M     0
@@ -313,15 +320,22 @@ void driver_usb_send_continous(uint8_t ep)
     */
 
     ep_entry = ep*4 + 2 + usb_tx_odd[ep];
-    usb_tx_odd[ep] ^= 1;
+
 
     p = ep_buf + ep_entry*BUF_SIZE_OF_ONE_EP;  // 32 byte each ep.
 
     // get then len for sending
-    len = load_from_send_buffer_manager();
+    len = s_load();
 
     if(len == 0)
+    {
+        debug_record_string("none.");
         return;
+    }
+    else
+        debug_record((char*)&len, 4);
+
+
 
     bd_table[ep_entry].cnt = (unsigned short)len;
 
@@ -332,38 +346,8 @@ void driver_usb_send_continous(uint8_t ep)
     // send data to CDC
     update_toggle_data();
     bd_table[ep_entry].bd_flag._byte = toggle_data;
-}
 
-void driver_usb_set_interface(void)
-{
-    /* EndPoint Register settings */
-    USB0->ENDPOINT[1].ENDPT = USB_ENDPT_EPTXEN_MASK  | USB_ENDPT_EPHSHK_MASK; // direction = in
-    USB0->ENDPOINT[2].ENDPT = USB_ENDPT_EPTXEN_MASK  | USB_ENDPT_EPHSHK_MASK; // direction = in
-    USB0->ENDPOINT[3].ENDPT = USB_ENDPT_EPRXEN_MASK  | USB_ENDPT_EPHSHK_MASK; // direction = out
-
-    // EP0 OUT BDT Settings
-    bd_table[index_ep0_out_even].cnt           = BUF_SIZE_OF_ONE_EP;
-    bd_table[index_ep0_out_even].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_out_even);
-    bd_table[index_ep0_out_even].bd_flag._byte = OWN_SIE;
-    // EP0 OUT BDT Settings
-    bd_table[index_ep0_out_odd].cnt           = BUF_SIZE_OF_ONE_EP;
-    bd_table[index_ep0_out_odd].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_out_odd);
-    bd_table[index_ep0_out_odd].bd_flag._byte = OWN_SIE;
-
-    /* EndPoint 1 BDT Settings*/
-    bd_table[index_ep1_in_even].cnt           = 0x0;
-    bd_table[index_ep1_in_even].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep1_in_even);
-    bd_table[index_ep1_in_even].bd_flag._byte = OWN_MCU;
-
-    /* EndPoint 2 BDT Settings*/
-    bd_table[index_ep2_in_even].cnt           = 0x0;
-    bd_table[index_ep2_in_even].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep2_in_even);
-    bd_table[index_ep2_in_even].bd_flag._byte = OWN_MCU;
-
-    /* EndPoint 3 BDT Settings*/
-    bd_table[index_ep3_out_even].cnt           = 0xFF;
-    bd_table[index_ep3_out_even].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep3_out_even);
-    bd_table[index_ep3_out_even].bd_flag._byte = OWN_SIE;
+    usb_tx_odd[ep] ^= 1;
 }
 
 void driver_set_addr(uint8_t addr)
@@ -373,7 +357,7 @@ void driver_set_addr(uint8_t addr)
 
 void driver_usb_init(void)
 {
-    s_usb_reg_init();
+    s_usb_regulator_init();
     s_usb_clock_init();
     hal_nvic_enable_irq(USB_IRQ_NUMBER);
 
@@ -386,7 +370,7 @@ void driver_usb_init(void)
     USB0->BDTPAGE3 = (uint8_t)((uint32_t)bd_table>>24);
 
 
-    USB0->INTEN |= USB_INTEN_TOKDNEEN_MASK;
+    USB0->INTEN |= USB_INTEN_TOKDNEEN_MASK | USB_INTEN_USBRSTEN_MASK;
 
     // Enable EP0
     USB0->ENDPOINT[0].ENDPT = 0x0D;
@@ -418,36 +402,53 @@ void driver_usb_notify_get_data(uint8_t ep)
 {
     (bd_table[ep<<2].bd_flag._byte = OWN_MCU);
 }
+int cnt_rst = 0;
 void driver_usb_isr(void)
 {
     // do not use if... else if... else if here.
 
+    debug_record_string("\r\n isr, ");
+    debug_record((char*)(&(USB0->ISTAT)), 1 );
+
+    if(USB0->ISTAT & USB_ISTAT_USBRST_MASK)
+    {
+        debug_record_string("reset, ");
+        USB0->ISTAT |= 0xff;
+        s_handler_reset();
+        cnt_rst++;
+        return;
+    }
+
     if(USB0->ISTAT & USB_ISTAT_TOKDNE_MASK)
     {
+        debug_record_string("token, ");
         s_handler_token();
         USB0->ISTAT |= USB_ISTAT_TOKDNE_MASK;
     }
 
     if(USB0->ISTAT & USB_ISTAT_STALL_MASK)
     {
-        s_handler_stall();
         USB0->ISTAT |= USB_ISTAT_STALL_MASK;
-    }
-
-    if(USB0->ISTAT & USB_ISTAT_USBRST_MASK)
-    {
-        USB0->ISTAT |= USB_ISTAT_USBRST_MASK;
+        debug_record_string("stall, ");
+        s_handler_stall();
     }
 
     if(USB0->ISTAT & USB_ISTAT_SLEEP_MASK)
     {
         USB0->ISTAT |= USB_ISTAT_SLEEP_MASK;
+        debug_record_string("sleep, ");
     }
 
     if(USB0->ISTAT & USB_ISTAT_ERROR_MASK)
     {
         USB0->ISTAT |= USB_ISTAT_ERROR_MASK;
+        debug_record_string("error, ");
     }
+
+    asm(" nop");
+    asm(" nop");
+    asm(" nop");
+    asm(" nop");
 }
 
 void usb0_handler(void)

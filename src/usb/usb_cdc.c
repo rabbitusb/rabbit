@@ -4,7 +4,9 @@
 
 
 #include <stdint.h>
+#include "usb_spec.h"
 #include "usb_driver.h"
+#include "usb_debug.h"
 
 #if DEBUG_ENABLE
 #include "usb_debug.h"
@@ -27,18 +29,6 @@ enum E_EP_LIST
     EP3,
 };
 
-typedef struct
-{
-    uint8_t req_type;
-    uint8_t req;
-    uint8_t value_l;
-    uint8_t value_h;
-    uint8_t index_l;
-    uint8_t index_h;
-    uint8_t len_l;
-    uint8_t len_h;
-}S_SETUP;
-
 #define EP_IN  EP2
 #define EP_OUT EP3
 
@@ -58,19 +48,6 @@ typedef struct
 #define DESCRIPTOR_ENDPOINT        5
 #define DESCRIPTOR_DEVICE_QUALIFIE 6
 #define DESCRIPTOR_INTERFACE_POWER 8
-
-#define REQ_STANDARD             0x00
-#define REQ_SPECIFIC             0x20
-#define REQ_VENDORSPEC           0x40
-#define REQ_STANDARD_DEVICE      0x00
-#define REQ_CLASS_INTERFACE      0x21
-#define REQ_INTERFACE            0x01
-#define REQ_ENDPOINT             0x02
-
-#define PID_SETUP    0xd
-#define PID_OUT      0x1
-#define PID_IN       0x9
-#define PID_ACK      0x2
 
 #define CDC_REQ_WAITING_FOR_ENUMERATION 0x00
 #define CDC_REQ_SET_LINE_CODING         0x20
@@ -128,12 +105,13 @@ const uint8_t* string_table[4]=
 };
 
 //static char buf_debug[100];
-
+extern int cnt_rst;
 void cdc_request_device(void)
 {
     switch(setup->req)
     {
         case REQUEST_SET_ADDRESS:
+            debug_record_string("set address, ");
             usb_addr  = setup->value_l;
             usb_state = address;
             driver_usb_send(EP0,0,0);
@@ -144,18 +122,22 @@ void cdc_request_device(void)
             switch(setup->value_h)
             {
                 case DESCRIPTOR_DEVICE:
+                    debug_record_string("des, device");
+                    cnt_rst = 0;
                     driver_usb_send(EP0,
                                     (uint8_t*)device_descriptor,
                                     sizeof(device_descriptor));
                     break;
 
                 case DESCRIPTOR_CONFIGURATION:
+                    debug_record_string("config");
                     driver_usb_send(EP0,
                                     (uint8_t*)config_descriptor,
                                     sizeof(config_descriptor));
                     break;
 
                 case DESCRIPTOR_STRING:
+                    debug_record_string("string");
                     driver_usb_send(EP0,
                                     (uint8_t*)string_table[setup->value_l],
                                     string_table[setup->value_l][0]);
@@ -169,7 +151,7 @@ void cdc_request_device(void)
 
         case REQUEST_SET_CONFIG:
             // get this request means enumuation finished.
-            driver_usb_set_interface();
+            //driver_usb_set_interface();
             usb_state = enumerated;
             driver_usb_send(EP0,0,0);
             break;
@@ -220,12 +202,9 @@ void cdc_usb_pid_setup(void)
 }
 
 int i = 0;
-void cdc_entry(S_USB_PARA * para, enum ENUM_DIRECTION dir)
+void cdc_entry(S_USB_PARA * para)
 {
-    i++;
-    if(i==4)
-        i = i;
-
+/*
     if(para->ep)
     {
         // data
@@ -239,47 +218,47 @@ void cdc_entry(S_USB_PARA * para, enum ENUM_DIRECTION dir)
         else
         {
             // tx
-            driver_usb_send_continous(para->ep);
+            //driver_usb_send_continous(para->ep);
         }
     }
-
+*/
     if(para->ep == 0)
     {
         // enumeration
         setup = (S_SETUP*)(para->buf);
-
-        // EP0
-        #if DEBUG_ENABLE
-        debug_record((char*)setup, size);
-        #endif
-
-        if(dir == direction_tx)
+        switch(para->pid)
         {
-            if(usb_state == address)
-            {
-                // set address after current transaction finished
-                driver_set_addr(usb_addr);
-                usb_state = ready;
-            }
+            case PID_SETUP:
+                debug_record_string("SET UP, ");
+                cdc_usb_pid_setup();
+                driver_usb_update_bd(para);
+                break;
 
-            driver_usb_send_continous(para->ep);
+            case PID_OUT:
+                i = i;
+                debug_record_string("PID OUT, ");
+                driver_usb_update_bd(para);
+                break;
+
+            case PID_IN:
+                debug_record_string("PID IN, ");
+                if(usb_state == address)
+                {
+                    // set address after current transaction finished
+                    driver_set_addr(usb_addr);
+                    usb_state = ready;
+                }
+
+                driver_usb_send_continous(para->ep);
+                break;
+
+            default:
+                i = i;
         }
-        else
-        {
-            switch(para->pid)
-            {
-                case PID_SETUP:
-                    cdc_usb_pid_setup();
-                    driver_usb_update_bd(para);
-                    break;
-                case PID_OUT:
-                    i = i;
-                    driver_usb_update_bd(para);
-                    break;
-                default:
-                    i = i;
-            }
-        }
+    }
+    else
+    {
+        debug_record_string("non ep0,");
     }
 }
 
@@ -288,10 +267,16 @@ void cdc_send(uint8_t * buf, int len)
     driver_usb_send(EP_IN, buf, len);
 }
 
+void print_fifo(void);
 void cdc_wait_enumerate(void)
 {
+    int i = 0;
     while(usb_state != enumerated)
-        i=i;
+    {
+        i++;
+        if(i== 1000*1000*3)
+            debug_show();
+    }
 }
 
 
@@ -302,11 +287,11 @@ const uint8_t device_descriptor[18]=
 {
     0x12,      // blength
     0x01,      // bDescriptor
-    0x10,0x01, // bcdUSB ver R=2.00
+    0x10,0x01, // bcdUSB version = 1.10
     0x02,      // bDeviceClass
     0x00,      // bDeviceSubClass
     0x00,      // bDeviceProtocol
-    0x20,      // bMaxPacketSize0
+    0x08,      // 0x40,      // bMaxPacketSize0
     0xA2,0x15, // idVendor - 0x15A2(freescale Vendor ID)
     0x0F,0xA5, // idProduct
     0x00,0x00, // bcdDevice - Version 1.00

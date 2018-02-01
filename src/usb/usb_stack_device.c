@@ -1,6 +1,6 @@
 
 #include <stdint.h>
-#include "usb_stack_spec.h"
+#include "usb_spec.h"
 #include "usb_driver.h"
 #include "usb_cdc.h"
 

@@ -20,7 +20,7 @@
 	<reent.h>
 	<sys/stat.h>
 
-1517294408 source:d:\gj_folder\x_plan\code\rabbit\src\boot.c
+1517451184 source:d:\gj_folder\x_plan\code\rabbit\src\boot.c
 	".\\hal\\hal_watchdog.h"
 
 1364381714 source:d:\gj_folder\x_plan\code\rabbit\emide\syscalls.c
@@ -55,7 +55,7 @@
 
 1517234876 d:\gj_folder\x_plan\code\rabbit\src\\print\\print.h
 
-1517291984 source:d:\gj_folder\x_plan\code\rabbit\src\hal\hal_usb.c
+1517382385 source:d:\gj_folder\x_plan\code\rabbit\src\hal\hal_usb.c
 	<stdbool.h>
 	<stdint.h>
 	"MKL26Z4.h"
@@ -66,12 +66,12 @@
 
 1517242031 d:\gj_folder\x_plan\code\rabbit\src\hal\hal_nvic.h
 
-1517381671 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_cdc.c
+1517459369 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_cdc.c
 	<stdint.h>
 	"usb_driver.h"
 	"usb_debug.h"
 
-1517381650 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.h
+1517459267 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.h
 
 1439633678 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_debug.h
 
@@ -79,16 +79,18 @@
 	<stdio.h>
 	<string.h>
 
-1517296057 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_main.c
+1517415861 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_main.c
+	<stdint.h>
 	"usb_driver.h"
 	"usb_cdc.h"
 	"string.h"
 
-1439651477 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_cdc.h
+1517417974 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_cdc.h
 
-1517381609 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.c
+1517464122 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.c
 	<stdint.h>
 	<stddef.h>
+	<string.h>
 	"..\\hal\\MKL26Z4.h"
 	"..\\hal\\hal_nvic.h"
 	"usb_driver.h"
@@ -101,11 +103,11 @@
 
 1517326691 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_stack_device.h
 
-1517327068 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_stack_device.c
+1517383831 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_stack_device.c
 	<stdint.h>
 	"usb_stack_spec.h"
 	"usb_driver.h"
 	"usb_cdc.h"
 
-1517326470 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_stack_spec.h
+1517385167 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_stack_spec.h
 

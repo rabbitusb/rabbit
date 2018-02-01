@@ -1,4 +1,6 @@
 
+
+#include <stdint.h>
 #include "usb_driver.h"
 #include "usb_cdc.h"
 #include "string.h"

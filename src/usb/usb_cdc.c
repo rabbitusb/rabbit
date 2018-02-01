@@ -12,7 +12,7 @@
 
 enum E_USB_STATE
 {
-    power,
+    power_on,
     enumerated,
     enabled,
     address,
@@ -29,14 +29,14 @@ enum E_EP_LIST
 
 typedef struct
 {
-    unsigned char req_type;
-    unsigned char req;
-    unsigned char value_l;
-    unsigned char value_h;
-    unsigned char index_l;
-    unsigned char index_h;
-    unsigned char len_l;
-    unsigned char len_h;
+    uint8_t req_type;
+    uint8_t req;
+    uint8_t value_l;
+    uint8_t value_h;
+    uint8_t index_l;
+    uint8_t index_h;
+    uint8_t len_l;
+    uint8_t len_h;
 }S_SETUP;
 
 #define EP_IN  EP2
@@ -46,6 +46,11 @@ typedef struct
 #define REQUEST_GET_DESCRIPTOR 6
 #define REQUEST_SET_CONFIG     9
 
+#define REQUEST_SET_LINE_CODING        0x20
+#define REQUEST_GET_LINE_CODING        0x21
+#define REQUEST_SET_CONTROL_LINE_STATE 0x22
+
+
 #define DESCRIPTOR_DEVICE          1
 #define DESCRIPTOR_CONFIGURATION   2
 #define DESCRIPTOR_STRING          3
@@ -54,12 +59,13 @@ typedef struct
 #define DESCRIPTOR_DEVICE_QUALIFIE 6
 #define DESCRIPTOR_INTERFACE_POWER 8
 
-#define REQ_STANDARD    0x00
-#define REQ_SPECIFIC    0x20
-#define REQ_VENDORSPEC  0x40
-#define REQ_DEVICE      0x00
-#define REQ_INTERFACE   0x01
-#define REQ_ENDPOINT    0x02
+#define REQ_STANDARD             0x00
+#define REQ_SPECIFIC             0x20
+#define REQ_VENDORSPEC           0x40
+#define REQ_STANDARD_DEVICE      0x00
+#define REQ_CLASS_INTERFACE      0x21
+#define REQ_INTERFACE            0x01
+#define REQ_ENDPOINT             0x02
 
 #define PID_SETUP    0xd
 #define PID_OUT      0x1
@@ -78,42 +84,42 @@ typedef struct
 
 typedef struct
 {
-    unsigned int  dte_rate;
-    unsigned char format;
-    unsigned char parity;
-    unsigned char bits;
+    uint32_t  dte_rate;
+    uint8_t   format;
+    uint8_t   parity;
+    uint8_t   bits;
 }S_CDC_LINE_CODING;
 
 enum E_USB_STATE   usb_state;
 S_SETUP *          setup;
 S_CDC_LINE_CODING  line_coding;
-unsigned char      usb_addr;
-static void (*p_call_back_get_data)(unsigned char * buf, int len);
+uint8_t      usb_addr;
+static void (*p_call_back_get_data)(uint8_t * buf, int len);
 
 
-void cdc_init(void (call_back_get_data)(unsigned char * buf, int len))
+void cdc_init(void (call_back_get_data)(uint8_t * buf, int len))
 {
     p_call_back_get_data = call_back_get_data;
-    usb_state            = power;
+    usb_state            = power_on;
 
     /* Line Coding Initialization */
-    line_coding.dte_rate    = 9600;
-    line_coding.format = 0;
-    line_coding.parity = 0;
-    line_coding.bits   = 0x08;
+    line_coding.dte_rate  = 9600;
+    line_coding.format    = 0;
+    line_coding.parity    = 0;
+    line_coding.bits      = 0x08;
 
     driver_usb_set_ep_in(EP_IN);
 }
 
 
-extern const unsigned char string_descriptor0[];
-extern const unsigned char string_descriptor1[];
-extern const unsigned char string_descriptor2[];
-extern const unsigned char string_descriptor3[];
-extern const unsigned char device_descriptor[18];
-extern const unsigned char config_descriptor[0x43];
+extern const uint8_t string_descriptor0[];
+extern const uint8_t string_descriptor1[];
+extern const uint8_t string_descriptor2[];
+extern const uint8_t string_descriptor3[];
+extern const uint8_t device_descriptor[18];
+extern const uint8_t config_descriptor[0x43];
 
-const unsigned char* string_table[4]=
+const uint8_t* string_table[4]=
 {
     string_descriptor0,
     string_descriptor1,
@@ -139,19 +145,19 @@ void cdc_request_device(void)
             {
                 case DESCRIPTOR_DEVICE:
                     driver_usb_send(EP0,
-                                    (unsigned char*)device_descriptor,
+                                    (uint8_t*)device_descriptor,
                                     sizeof(device_descriptor));
                     break;
 
                 case DESCRIPTOR_CONFIGURATION:
                     driver_usb_send(EP0,
-                                    (unsigned char*)config_descriptor,
+                                    (uint8_t*)config_descriptor,
                                     sizeof(config_descriptor));
                     break;
 
                 case DESCRIPTOR_STRING:
                     driver_usb_send(EP0,
-                                    (unsigned char*)string_table[setup->value_l],
+                                    (uint8_t*)string_table[setup->value_l],
                                     string_table[setup->value_l][0]);
                     break;
 
@@ -174,50 +180,73 @@ void cdc_request_device(void)
             break;
     }
 }
+void cdc_request_class(void)
+{
+    switch(setup->req)
+    {
+        case REQUEST_GET_LINE_CODING:
+            driver_usb_send(EP0,0,0);
+            break;
 
+        case REQUEST_SET_CONTROL_LINE_STATE:
+            driver_usb_send(EP0,0,0);
+            break;
+
+        case REQUEST_SET_LINE_CODING:
+            driver_usb_send(EP0,0,0);
+            break;
+
+        default:
+            break;
+    }
+}
 void cdc_usb_pid_setup(void)
 {
     driver_set_toggle_data1();
 
-    switch(setup->req_type & 0x1F)
+    switch(setup->req_type & 0x7f)
     {
-        case REQ_DEVICE:
+        case REQ_STANDARD_DEVICE:
             cdc_request_device();
             break;
 
+        case REQ_CLASS_INTERFACE:
+            cdc_request_class();
+            break;
+
         default:
-            driver_usb_send(EP0,0,0);
             break;
     }
 }
 
-
-void cdc_entry(unsigned char ep, enum ENUM_DIRECTION dir, unsigned char * buf, int size)
+int i = 0;
+void cdc_entry(S_USB_PARA * para, enum ENUM_DIRECTION dir)
 {
-#if 0
-    if(ep)
+    i++;
+    if(i==4)
+        i = i;
+
+    if(para->ep)
     {
         // data
         if(dir == direction_rx)
         {
             // let task process it
-            driver_usb_notify_get_data(ep);
-            p_call_back_get_data(buf, size);
-            driver_usb_notify_next_rx(ep);
+            driver_usb_notify_get_data(para->ep);
+            p_call_back_get_data(para->buf, para->len);
+            driver_usb_notify_next_rx(para->ep);
         }
         else
         {
             // tx
-            void driver_usb_send_continous(void);
-            driver_usb_send_continous();
+            driver_usb_send_continous(para->ep);
         }
     }
-#endif
 
-    if(ep == 0)
+    if(para->ep == 0)
     {
         // enumeration
-        setup = (S_SETUP*)buf;
+        setup = (S_SETUP*)(para->buf);
 
         // EP0
         #if DEBUG_ENABLE
@@ -233,37 +262,43 @@ void cdc_entry(unsigned char ep, enum ENUM_DIRECTION dir, unsigned char * buf, i
                 usb_state = ready;
             }
 
-            driver_usb_send_continous();
+            driver_usb_send_continous(para->ep);
         }
         else
         {
-            switch(driver_get_pid())
+            switch(para->pid)
             {
                 case PID_SETUP:
                     cdc_usb_pid_setup();
+                    driver_usb_update_bd(para);
+                    break;
+                case PID_OUT:
+                    i = i;
+                    driver_usb_update_bd(para);
                     break;
                 default:
-                    driver_usb_send(0,0,0);
+                    i = i;
             }
         }
     }
 }
 
-void cdc_send(unsigned char * buf, int len)
+void cdc_send(uint8_t * buf, int len)
 {
     driver_usb_send(EP_IN, buf, len);
 }
 
 void cdc_wait_enumerate(void)
 {
-    while(usb_state != enumerated);
+    while(usb_state != enumerated)
+        i=i;
 }
 
 
 //-------------------------------------------
 // descriptors
 //-------------------------------------------
-const unsigned char device_descriptor[18]=
+const uint8_t device_descriptor[18]=
 {
     0x12,      // blength
     0x01,      // bDescriptor
@@ -281,7 +316,7 @@ const unsigned char device_descriptor[18]=
     0x01       // bNumConfigurations - # of config. at current speed,
 };
 
-const unsigned char config_descriptor[0x43]=
+const uint8_t config_descriptor[0x43]=
 {
 
     0x09,       // blength
@@ -357,14 +392,14 @@ const unsigned char config_descriptor[0x43]=
     0x00,           //bInterval
 };
 
-const unsigned char string_descriptor0[] =
+const uint8_t string_descriptor0[] =
 {
     0x04,           // bLength;
     0x03,           // bDescriptorType - STRING descriptor
     0x09,0x04       // wLANDID0 - English (American)
 };
 
-const unsigned char string_descriptor1[] =
+const uint8_t string_descriptor1[] =
 {
     0x04,           //bLength; 11 bytes
     0x03,           //bDescriptorType - STRING descriptor
@@ -372,7 +407,7 @@ const unsigned char string_descriptor1[] =
     'j',0x00,
 };
 
-const unsigned char string_descriptor2[] =
+const uint8_t string_descriptor2[] =
 {
     0x12,           //bLength;
     0x03,           //bDescriptorType - STRING descriptor
@@ -386,7 +421,7 @@ const unsigned char string_descriptor2[] =
     'T',0x00
 };
 
-const unsigned char string_descriptor3[] =
+const uint8_t string_descriptor3[] =
 {
     0x12,      //bLength;
     0x03,      //bDescriptorType - STRING descriptor

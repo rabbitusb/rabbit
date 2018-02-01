@@ -7,19 +7,28 @@ enum ENUM_DIRECTION
     direction_rx,
     direction_tx
 };
-void                driver_usb_init(void);
-void                driver_usb_send(unsigned char ep, unsigned char *buf, unsigned int buf_len);
-void                driver_usb_send_continous(void);
-unsigned char       driver_usb_receive(unsigned char, unsigned char*);
-void                driver_set_addr(unsigned char addr);
-unsigned char       driver_get_pid(void);
-void                driver_set_toggle_data0(void);
-void                driver_set_toggle_data1(void);
-void                driver_usb_notify_get_data(unsigned char ep);
-void                driver_usb_notify_next_rx(unsigned char ep);
-void                driver_usb_set_interface(void);
-void                driver_usb_set_ep_in(unsigned char ep);
+typedef struct
+{
+    uint8_t   ep;
+    uint8_t   odd;
+    uint8_t   index;
+    uint8_t   pid;
+    uint8_t * buf;
+    uint16_t  len;
+}S_USB_PARA;
 
+void    driver_usb_init(void);
+void    driver_usb_send(uint8_t ep, uint8_t *buf, uint32_t buf_len);
+void    driver_usb_send_continous(uint8_t ep);
+uint8_t driver_usb_receive(uint8_t, uint8_t*);
+void    driver_set_addr(uint8_t addr);
+void    driver_set_toggle_data0(void);
+void    driver_set_toggle_data1(void);
+void    driver_usb_notify_get_data(uint8_t ep);
+void    driver_usb_notify_next_rx(uint8_t ep);
+void    driver_usb_set_interface(void);
+void    driver_usb_set_ep_in(uint8_t ep);
+void    driver_usb_update_bd(S_USB_PARA * usb_para);
 
 
 

@@ -15,6 +15,7 @@ static void usb_enable(void)
 {
     USB0->CTL |= USB_CTL_USBENSOFEN_MASK;
 }
+/*
 static void usb_pull_up(bool enable)
 {
     if(enable)
@@ -22,6 +23,8 @@ static void usb_pull_up(bool enable)
     else
         USB0->CONTROL &= ~USB_CONTROL_DPPULLUPNONOTG_MASK;
 }
+*/
+
 void hal_usb_init(void)
 {
     SIM->SCGC4 |= SIM_SCGC4_USBOTG_MASK;

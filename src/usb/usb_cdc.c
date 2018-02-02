@@ -274,7 +274,7 @@ void cdc_wait_enumerate(void)
     while(usb_state != enumerated)
     {
         i++;
-        if(i== 1000*1000*3)
+        if(i == 1000*1000*3)
             debug_show();
     }
 }

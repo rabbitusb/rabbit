@@ -259,9 +259,9 @@ void driver_usb_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
     uint8_t  *p;
     uint32_t len;
     uint32_t ep_entry;
-    debug_record_string("usb_send, ");
-    debug_record((char*)&buf_len, 4);
-    debug_record_string("|| ");
+    debug_record_string(", send, pack len:");
+    debug_record((char*)&buf_len, 1);
+
 
     /*
         TX         ODD
@@ -271,15 +271,19 @@ void driver_usb_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
         M->USB     1
     */
     ep_in    = ep;
-    ep_entry = ep*4 + 2 + usb_tx_odd[ep];
+    ep_entry = ep*4 + 2; // + usb_tx_odd[ep];
     usb_tx_odd[ep] ^= 1;
-
+    
+    debug_record_string("ep_entry:");
+    debug_record((char*)&ep_entry, 1);
+    
     p = ep_buf + ep_entry*BUF_SIZE_OF_ONE_EP;  // 32 byte each ep.
 
     s_store(buf, buf_len);
     len = s_load();
 
-    debug_record((char*)&len, 4);
+    debug_record_string("  load len:");
+    debug_record((char*)&len, 1);
 
     bd_table[ep_entry].cnt = (unsigned short)len;
 
@@ -290,6 +294,8 @@ void driver_usb_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
     if(ep == 0)
     {
         // control point
+        debug_record_string("toggle: ");
+        debug_record((char*)&toggle_data, 1);
         bd_table[ep_entry].bd_flag._byte = toggle_data;
         update_toggle_data();
     }
@@ -319,8 +325,9 @@ void driver_usb_send_continous(uint8_t ep)
         M->USB     1
     */
 
-    ep_entry = ep*4 + 2 + usb_tx_odd[ep];
-
+    ep_entry = ep*4 + 2; // + usb_tx_odd[ep];
+    debug_record_string("ep_entry: ");
+    debug_record((char*)&ep_entry, 1);
 
     p = ep_buf + ep_entry*BUF_SIZE_OF_ONE_EP;  // 32 byte each ep.
 
@@ -333,7 +340,7 @@ void driver_usb_send_continous(uint8_t ep)
         return;
     }
     else
-        debug_record((char*)&len, 4);
+        debug_record((char*)&len, 1);
 
 
 
@@ -344,9 +351,11 @@ void driver_usb_send_continous(uint8_t ep)
         *p++ = *p_data++;
 
     // send data to CDC
-    update_toggle_data();
+    
+    debug_record_string("toggle: ");
+    debug_record((char*)&toggle_data, 1);
     bd_table[ep_entry].bd_flag._byte = toggle_data;
-
+    update_toggle_data();
     usb_tx_odd[ep] ^= 1;
 }
 

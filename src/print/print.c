@@ -6,7 +6,7 @@
 
 
 static char buf[256];
-static void send_string(char *str)
+void rabbit_send_string(char *str)
 {
     for(; *str != 0; str++)
     {
@@ -23,5 +23,5 @@ void rabbit_printf(char *fmt, ...)
     vsprintf(buf, fmt, arg);
     va_end(arg);
 
-    send_string(buf);
+    rabbit_send_string(buf);
 }

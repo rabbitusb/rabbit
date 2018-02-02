@@ -27,6 +27,7 @@ void debug_record_string(char * buf)
 }
 void debug_show(void)
 {
-    rabbit_printf("%s", debug_buf);
+    //rabbit_printf("%s", debug_buf);
+    rabbit_send_string(debug_buf);
 }
 

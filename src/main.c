@@ -29,9 +29,7 @@ int main(void)
     hal_uart_init(); // Set uart baudrate to 115200
 
     rabbit_printf("hello, rabbit.\n");
-
     fifo_init(&fifo, buf_fifo, FIFO_LEN);
-
     usb_main();
 
     while (1)

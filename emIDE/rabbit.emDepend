@@ -69,18 +69,18 @@
 
 1517242031 d:\gj_folder\x_plan\code\rabbit\src\hal\hal_nvic.h
 
-1517537758 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_cdc.c
+1517649086 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_cdc.c
 	<stdint.h>
 	"usb_spec.h"
 	"usb_driver.h"
 	"usb_debug.h"
 	"usb_debug.h"
 
-1517459267 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.h
+1517648666 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.h
 
 1517590224 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_debug.h
 
-1517590369 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_debug.c
+1517650348 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_debug.c
 	<stdio.h>
 	<string.h>
 	"..\\print\\print.h"
@@ -93,7 +93,7 @@
 
 1517498122 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_cdc.h
 
-1517589680 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.c
+1517649794 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.c
 	<stdint.h>
 	<stddef.h>
 	<string.h>

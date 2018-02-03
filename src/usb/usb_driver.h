@@ -28,7 +28,7 @@ void    driver_usb_notify_get_data(uint8_t ep);
 void    driver_usb_notify_next_rx(uint8_t ep);
 void    driver_usb_set_interface(void);
 void    driver_usb_set_ep_in(uint8_t ep);
-void    driver_usb_update_bd(S_USB_PARA * usb_para);
+void    driver_usb_own_usb(S_USB_PARA * usb_para);
 
 
 

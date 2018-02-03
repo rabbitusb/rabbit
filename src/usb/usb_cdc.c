@@ -70,7 +70,7 @@ typedef struct
 enum E_USB_STATE   usb_state;
 S_SETUP *          setup;
 S_CDC_LINE_CODING  line_coding;
-uint8_t      usb_addr;
+uint8_t            usb_addr;
 static void (*p_call_back_get_data)(uint8_t * buf, int len);
 
 
@@ -229,19 +229,19 @@ void cdc_entry(S_USB_PARA * para)
         switch(para->pid)
         {
             case PID_SETUP:
-                debug_record_string("SET UP, ");
+                debug_record_string("SET, ");
                 cdc_usb_pid_setup();
-                driver_usb_update_bd(para);
+                driver_usb_own_usb(para);
                 break;
 
             case PID_OUT:
                 i = i;
-                debug_record_string("PID OUT, ");
-                driver_usb_update_bd(para);
+                debug_record_string("OUT, ");
+                driver_usb_own_usb(para);
                 break;
 
             case PID_IN:
-                debug_record_string("PID IN, ");
+                debug_record_string("IN, ");
                 if(usb_state == address)
                 {
                     // set address after current transaction finished
@@ -408,7 +408,7 @@ const uint8_t string_descriptor2[] =
 
 const uint8_t string_descriptor3[] =
 {
-    0x12,      //bLength;
+    0x12,       //bLength;
     0x03,      //bDescriptorType - STRING descriptor
     'T',0x00,
     'E',0x00,

@@ -180,13 +180,15 @@ static void load_rx_para(S_USB_PARA * usb_para)
         usb_para->len = bd_table[usb_para->index].cnt;
     }
 }
-void  driver_usb_update_bd(S_USB_PARA * usb_para)
+void  driver_usb_own_usb(S_USB_PARA * usb_para)
 {
     bd_table[usb_para->index].cnt = 8;
-    #define USB_RECEIVE_DATA0 0x80
-    #define USB_RECEIVE_DATA1 0xC0
+    #define OWN_USB_DATA0 0x80
+    #define OWN_USB_DATA1 0xc0
 
-    bd_table[usb_para->index].bd_flag._byte = USB_RECEIVE_DATA0;
+    debug_record((char*)&(usb_para->index), 1);
+
+    bd_table[usb_para->index].bd_flag._byte = OWN_USB_DATA0;
 }
 static void s_bd_init(void)
 {
@@ -273,16 +275,16 @@ void driver_usb_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
     ep_in    = ep;
     ep_entry = ep*4 + 2; // + usb_tx_odd[ep];
     usb_tx_odd[ep] ^= 1;
-    
-    debug_record_string("ep_entry:");
+
+    debug_record_string(" ep_en:");
     debug_record((char*)&ep_entry, 1);
-    
+
     p = ep_buf + ep_entry*BUF_SIZE_OF_ONE_EP;  // 32 byte each ep.
 
     s_store(buf, buf_len);
     len = s_load();
 
-    debug_record_string("  load len:");
+    debug_record_string(" load len:");
     debug_record((char*)&len, 1);
 
     bd_table[ep_entry].cnt = (unsigned short)len;
@@ -294,7 +296,7 @@ void driver_usb_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
     if(ep == 0)
     {
         // control point
-        debug_record_string("toggle: ");
+        debug_record_string("tg: ");
         debug_record((char*)&toggle_data, 1);
         bd_table[ep_entry].bd_flag._byte = toggle_data;
         update_toggle_data();
@@ -316,7 +318,7 @@ void driver_usb_send_continous(uint8_t ep)
     uint32_t  len;
     uint32_t  ep_entry;
 
-    debug_record_string("send_conti, ");
+    debug_record_string("send_c,");
     /*
         TX         ODD
         USB->M     0
@@ -326,7 +328,7 @@ void driver_usb_send_continous(uint8_t ep)
     */
 
     ep_entry = ep*4 + 2; // + usb_tx_odd[ep];
-    debug_record_string("ep_entry: ");
+    debug_record_string("ep_en: ");
     debug_record((char*)&ep_entry, 1);
 
     p = ep_buf + ep_entry*BUF_SIZE_OF_ONE_EP;  // 32 byte each ep.
@@ -351,8 +353,8 @@ void driver_usb_send_continous(uint8_t ep)
         *p++ = *p_data++;
 
     // send data to CDC
-    
-    debug_record_string("toggle: ");
+
+    debug_record_string(" tgl: ");
     debug_record((char*)&toggle_data, 1);
     bd_table[ep_entry].bd_flag._byte = toggle_data;
     update_toggle_data();
@@ -430,7 +432,7 @@ void driver_usb_isr(void)
 
     if(USB0->ISTAT & USB_ISTAT_TOKDNE_MASK)
     {
-        debug_record_string("token, ");
+        debug_record_string(" tk, ");
         s_handler_token();
         USB0->ISTAT |= USB_ISTAT_TOKDNE_MASK;
     }

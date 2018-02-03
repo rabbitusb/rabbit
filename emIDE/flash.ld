@@ -32,10 +32,10 @@
 MEMORY
 {
   FLASH (rx)      : ORIGIN = 0x00000000, LENGTH = 128K
-  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 8K
+  RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 12K
 }
 _Min_Heap_Size  = 0x0;   /* required amount of heap  */
-_Min_Stack_Size = 0x400;  /* required amount of stack */
+_Min_Stack_Size = 0x800;  /* required amount of stack */
 
 ENTRY(reset_handler)
 

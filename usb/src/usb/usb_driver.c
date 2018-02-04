@@ -5,10 +5,10 @@
 #include <string.h>
 #include "..\\hal\\MKL26Z4.h"
 #include "..\\hal\\hal_nvic.h"
+#include "usb_app.h"
 #include "usb_hal.h"
 #include "usb_driver.h"
-#include "usb_cdc.h"
-#include "usb_stack_device.h"
+#include "usb_core_dev.h"
 #include "usb_debug.h"
 #include "usb_spec.h"
 
@@ -160,9 +160,10 @@ static void s_load_rx_para(S_USB_PARA * usb_para)
 {
     uint8_t index;
 
-    usb_para->ep  = (USB0->STAT>>USB_STAT_ENDP_SHIFT) & 0x0f;
-    index         = s_ep_to_index(usb_para->ep);
-    usb_para->buf = ep_buf + BUF_SIZE_OF_ONE_EP * index;
+    usb_para->usb       = usb0;
+    usb_para->ep        = (USB0->STAT>>USB_STAT_ENDP_SHIFT) & 0x0f;
+    index               = s_ep_to_index(usb_para->ep);
+    usb_para->buf       = ep_buf + BUF_SIZE_OF_ONE_EP * index;
 
     if((USB0->STAT>>USB_STAT_TX_SHIFT) & 0x01)
     {
@@ -220,8 +221,10 @@ static void s_handler_reset(void)
 static void s_handler_token(void)
 {
     S_USB_PARA usb_para;
+
     s_load_rx_para(&usb_para);
-    cdc_entry(&usb_para);
+    usb_core_dev_entry(&usb_para);
+
     USB0->CTL &= ~USB_CTL_TXSUSPENDTOKENBUSY_MASK; // allow SIE receive new data
 }
 static void s_usb_clock_init(void)

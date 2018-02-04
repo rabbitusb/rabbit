@@ -77,10 +77,6 @@
 		<Unit filename="../src/boot.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../src/component/fifo.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../src/component/fifo.h" />
 		<Unit filename="../src/hal/MKL26Z4.h" />
 		<Unit filename="../src/hal/hal_mcg.c">
 			<Option compilerVar="CC" />
@@ -109,10 +105,19 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/print/print.h" />
-		<Unit filename="../src/usb/usb_cdc.c">
+		<Unit filename="../src/usb/class/usb_cls_cdc_dev.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../src/usb/class/usb_cls_cdc_dev.h" />
+		<Unit filename="../src/usb/usb_app.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/usb/usb_app.h" />
 		<Unit filename="../src/usb/usb_cdc.h" />
+		<Unit filename="../src/usb/usb_core_dev.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/usb/usb_core_dev.h" />
 		<Unit filename="../src/usb/usb_debug.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -129,10 +134,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/usb/usb_spec.h" />
-		<Unit filename="../src/usb/usb_stack_device.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../src/usb/usb_stack_device.h" />
 		<Unit filename="flash.ld" />
 		<Unit filename="syscalls.c">
 			<Option compilerVar="CC" />

@@ -4,9 +4,10 @@
 
 
 #include <stdint.h>
-#include "usb_spec.h"
-#include "usb_hal.h"
-#include "usb_debug.h"
+#include "..\\usb_spec.h"
+#include "..\\usb_app.h"
+#include "..\\usb_hal.h"
+#include "..\\usb_debug.h"
 
 #if DEBUG_ENABLE
 #include "usb_debug.h"

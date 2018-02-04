@@ -120,3 +120,154 @@
 
 1517749591 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_hal.h
 
+1517499628 source:d:\gj_folder\x_plan\code\rabbit\usb\src\boot.c
+	".\\hal\\hal_watchdog.h"
+
+1517100991 d:\gj_folder\x_plan\code\rabbit\usb\src\\hal\\hal_watchdog.h
+
+1517289747 source:d:\gj_folder\x_plan\code\rabbit\usb\src\hal\hal_mcg.c
+	"stdint.h"
+	"MKL26Z4.h"
+
+1517289651 d:\gj_folder\x_plan\code\rabbit\usb\src\hal\mkl26z4.h
+
+1517242739 source:d:\gj_folder\x_plan\code\rabbit\usb\src\hal\hal_nvic.c
+	"stdint.h"
+
+1517236519 source:d:\gj_folder\x_plan\code\rabbit\usb\src\hal\hal_uart.c
+	"stdint.h"
+	"MKL26Z4.h"
+
+1517382385 source:d:\gj_folder\x_plan\code\rabbit\usb\src\hal\hal_usb.c
+	<stdbool.h>
+	<stdint.h>
+	"MKL26Z4.h"
+	"hal_nvic.h"
+
+1517242031 d:\gj_folder\x_plan\code\rabbit\usb\src\hal\hal_nvic.h
+
+1517100980 source:d:\gj_folder\x_plan\code\rabbit\usb\src\hal\hal_watchdog.c
+	"stdint.h"
+	"MKL26Z4.h"
+
+1517750273 source:d:\gj_folder\x_plan\code\rabbit\usb\src\main.c
+	<stdint.h>
+	<stdbool.h>
+	".\\hal\\hal_uart.h"
+	".\\hal\\hal_mcg.h"
+	".\\print\\print.h"
+
+1517236511 d:\gj_folder\x_plan\code\rabbit\usb\src\\hal\\hal_uart.h
+
+1517236493 d:\gj_folder\x_plan\code\rabbit\usb\src\\hal\\hal_mcg.h
+
+1517590221 d:\gj_folder\x_plan\code\rabbit\usb\src\\print\\print.h
+
+1517590233 source:d:\gj_folder\x_plan\code\rabbit\usb\src\print\print.c
+	<stdarg.h>
+	<stdio.h>
+	"..\\hal\\hal_uart.h"
+
+1517758853 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_cdc.c
+	<stdint.h>
+	"usb_spec.h"
+	"usb_app.h"
+	"usb_hal.h"
+	"usb_debug.h"
+	"usb_debug.h"
+
+1517385167 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_spec.h
+
+1517760743 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_hal.h
+
+1517590224 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_debug.h
+
+1517713464 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_debug.c
+	<stdio.h>
+	<string.h>
+	"..\\print\\print.h"
+
+1517761962 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_driver.c
+	<stdint.h>
+	<stddef.h>
+	<string.h>
+	"..\\hal\\MKL26Z4.h"
+	"..\\hal\\hal_nvic.h"
+	"usb_app.h"
+	"usb_hal.h"
+	"usb_driver.h"
+	"usb_core_dev.h"
+	"usb_debug.h"
+	"usb_spec.h"
+
+1517289651 d:\gj_folder\x_plan\code\rabbit\usb\src\\hal\\mkl26z4.h
+
+1517242031 d:\gj_folder\x_plan\code\rabbit\usb\src\\hal\\hal_nvic.h
+
+1517749586 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_driver.h
+
+1517498122 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_cdc.h
+
+1517326691 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_stack_device.h
+
+1517760470 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_hal.c
+	<stdint.h>
+	"usb_driver.h"
+	"usb_app.h"
+
+1517762025 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_main.c
+	<stdint.h>
+	"usb_app.h"
+	"usb_hal.h"
+	".\\class\\usb_cls_cdc_dev.h"
+	"string.h"
+
+1517749796 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_stack_device.c
+	<stdint.h>
+	"usb_spec.h"
+	"usb_hal.h"
+	"usb_driver.h"
+	"usb_cdc.h"
+
+1364381714 source:d:\gj_folder\x_plan\code\rabbit\usb\emide\syscalls.c
+	<stdlib.h>
+	<reent.h>
+	<sys/stat.h>
+
+1517761593 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_core_dev.c
+	<stdint.h>
+	"usb_spec.h"
+	"usb_app.h"
+	"usb_hal.h"
+	".\\class\\usb_cls_cdc_dev.h"
+
+1517760482 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_core_dev.h
+
+1517760381 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_app.c
+	<stdint.h>
+	"usb_app.h"
+	"usb_hal.h"
+	"usb_core_dev.h"
+
+1517760641 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_app.h
+
+1517761544 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\class\usb_cls_cdc_dev.c
+	<stdint.h>
+	"..\\usb_spec.h"
+	"..\\usb_app.h"
+	"..\\usb_hal.h"
+	"..\\usb_debug.h"
+	"usb_debug.h"
+
+1517385167 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\usb_spec.h
+
+1517760641 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\usb_app.h
+
+1517760743 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\usb_hal.h
+
+1517590224 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\usb_debug.h
+
+1517761293 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\class\\usb_cls_cdc_dev.h
+
+1517761293 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\class\\usb_cls_cdc_dev.h
+

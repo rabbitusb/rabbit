@@ -1,8 +1,9 @@
 
 
 #include <stdint.h>
+#include "usb_app.h"
 #include "usb_hal.h"
-#include "usb_cdc.h"
+#include ".\\class\\usb_cls_cdc_dev.h"
 #include "string.h"
 
 
@@ -41,7 +42,7 @@ void process_data_received(void)
 
 void usb_main (void)
 {
-    usb_hal_init(0);
+    usb_app_init(usb0, usb_class_cdc_dev);
     cdc_init(call_back_get_data);
     cdc_wait_enumerate();
     while(1)

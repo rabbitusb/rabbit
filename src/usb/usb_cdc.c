@@ -105,7 +105,6 @@ const uint8_t* string_table[4]=
 };
 
 //static char buf_debug[100];
-extern int cnt_rst;
 void cdc_request_device(void)
 {
     switch(setup->req)
@@ -123,7 +122,6 @@ void cdc_request_device(void)
             {
                 case DESCRIPTOR_DEVICE:
                     debug_record_string("des, device");
-                    cnt_rst = 0;
                     driver_usb_send(EP0,
                                     (uint8_t*)device_descriptor,
                                     sizeof(device_descriptor));
@@ -231,13 +229,13 @@ void cdc_entry(S_USB_PARA * para)
             case PID_SETUP:
                 debug_record_string("SET, ");
                 cdc_usb_pid_setup();
-                driver_usb_own_usb(para);
+                driver_usb_set_owner_usb(para);
                 break;
 
             case PID_OUT:
                 i = i;
                 debug_record_string("OUT, ");
-                driver_usb_own_usb(para);
+                driver_usb_set_owner_usb(para);
                 break;
 
             case PID_IN:
@@ -271,11 +269,15 @@ void print_fifo(void);
 void cdc_wait_enumerate(void)
 {
     int i = 0;
+    usb_state = power_on;
     while(usb_state != enumerated)
     {
         i++;
         if(i == 1000*1000*3)
+        {
             debug_show();
+            return;
+        }
     }
 }
 

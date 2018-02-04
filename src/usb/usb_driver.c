@@ -28,8 +28,8 @@
 #define OWN_MCU 0x00
 #define OWN_SIE 0x80
 
-#define TOGGLE_DATA0 0x88
-#define TOGGLE_DATA1 0xc8
+#define TOGGLE_DATA0 0x80
+#define TOGGLE_DATA1 0xc0
 
 enum E_EP_CONFIG_INDEX
 {
@@ -99,7 +99,6 @@ static uint8_t   ep_buf[BUF_SIZE_OF_ONE_EP * EP_COUNT * BUF_COUNT_IN_EACH_EP];
 static uint8_t * p_data;
 static uint32_t  counter;
 static uint8_t   ep_in;
-static uint8_t   usb_tx_odd[EP_COUNT];
 // ------------------------------------------------
 static void update_toggle_data(void)
 {
@@ -145,7 +144,7 @@ static uint8_t s_load(void)
     return r;
 }
 
-static void load_rx_para(S_USB_PARA * usb_para)
+static void s_load_rx_para(S_USB_PARA * usb_para)
 {
     usb_para->ep  = (USB0->STAT>>USB_STAT_ENDP_SHIFT) & 0x0f;
     usb_para->odd = (USB0->STAT>>USB_STAT_ODD_SHIFT) & 0x01;
@@ -180,37 +179,41 @@ static void load_rx_para(S_USB_PARA * usb_para)
         usb_para->len = bd_table[usb_para->index].cnt;
     }
 }
-void  driver_usb_own_usb(S_USB_PARA * usb_para)
+void  driver_usb_set_owner_usb(S_USB_PARA * usb_para)
 {
     bd_table[usb_para->index].cnt = 8;
     #define OWN_USB_DATA0 0x80
     #define OWN_USB_DATA1 0xc0
 
+    debug_record_string(" index:");
     debug_record((char*)&(usb_para->index), 1);
 
     bd_table[usb_para->index].bd_flag._byte = OWN_USB_DATA0;
 }
 static void s_bd_init(void)
 {
-    // EP0 OUT BDT Settings
+    // EP0 OUT, rx
     bd_table[index_ep0_out_even].cnt           = BUF_SIZE_OF_ONE_EP;
     bd_table[index_ep0_out_even].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_out_even);
     bd_table[index_ep0_out_even].bd_flag._byte = OWN_SIE;
 
-    // EP0 OUT BDT Settings
+    // EP0 OUT, rx
     bd_table[index_ep0_out_odd].cnt            = BUF_SIZE_OF_ONE_EP;
     bd_table[index_ep0_out_odd].addr           = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_out_odd);
-    bd_table[index_ep0_out_odd].bd_flag._byte  = OWN_SIE;
+    bd_table[index_ep0_out_odd].bd_flag._byte  = OWN_MCU;
 
-    // EP0 IN BDT Settings
+    // EP0 IN, tx
     bd_table[index_ep0_in_even].cnt            = 0;
     bd_table[index_ep0_in_even].addr           = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_in_even);
-    bd_table[index_ep0_in_even].bd_flag._byte  = OWN_MCU; // TOGGLE_DATA0; //OWN_MCU;
-    // EP0 IN BDT Settings
+    bd_table[index_ep0_in_even].bd_flag._byte  = OWN_MCU;
+
+    // EP0 IN, tx
     bd_table[index_ep0_in_odd].cnt             = 0;
     bd_table[index_ep0_in_odd].addr            = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_in_odd);
-    bd_table[index_ep0_in_odd].bd_flag._byte   = OWN_MCU;  // TOGGLE_DATA0; //OWN_MCU;
+    bd_table[index_ep0_in_odd].bd_flag._byte   = OWN_MCU;
 }
+
+/*
 static void s_handler_stall(void)
 {
     if(USB0->ENDPOINT[0].ENDPT & USB_ENDPT_EPSTALL_MASK)
@@ -218,12 +221,11 @@ static void s_handler_stall(void)
 
     USB0->ISTAT |= USB_ISTAT_STALL_MASK;
 }
+*/
 
 static void s_handler_reset(void)
 {
-    s_bd_init();
-    memset(usb_tx_odd, 0, sizeof(usb_tx_odd));
-    USB0->CTL |= USB_CTL_ODDRST_MASK;
+    driver_set_addr(0);
 }
 
 static void s_handler_token(void)
@@ -231,7 +233,7 @@ static void s_handler_token(void)
     S_USB_PARA usb_para;
 
     // load pid, buf, len
-    load_rx_para(&usb_para);
+    s_load_rx_para(&usb_para);
     cdc_entry(&usb_para);
 
     /*
@@ -274,7 +276,6 @@ void driver_usb_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
     */
     ep_in    = ep;
     ep_entry = ep*4 + 2; // + usb_tx_odd[ep];
-    usb_tx_odd[ep] ^= 1;
 
     debug_record_string(" ep_en:");
     debug_record((char*)&ep_entry, 1);
@@ -344,21 +345,17 @@ void driver_usb_send_continous(uint8_t ep)
     else
         debug_record((char*)&len, 1);
 
-
-
     bd_table[ep_entry].cnt = (unsigned short)len;
 
     // copy data to tx buffer
     while(len--)
         *p++ = *p_data++;
 
-    // send data to CDC
-
+    // send data to host
     debug_record_string(" tgl: ");
     debug_record((char*)&toggle_data, 1);
-    bd_table[ep_entry].bd_flag._byte = toggle_data;
+    bd_table[ep_entry].bd_flag._byte = toggle_data; //TOGGLE_UDATA0; //toggle_data;
     update_toggle_data();
-    usb_tx_odd[ep] ^= 1;
 }
 
 void driver_set_addr(uint8_t addr)
@@ -366,20 +363,18 @@ void driver_set_addr(uint8_t addr)
     USB0->ADDR = addr;
 }
 
+void rabbit_printf(char *fmt, ...);
 void driver_usb_init(void)
 {
     s_usb_regulator_init();
     s_usb_clock_init();
     hal_nvic_enable_irq(USB_IRQ_NUMBER);
-
     s_bd_init();
-    memset(usb_tx_odd, 0, sizeof(usb_tx_odd));
 
     // Set BDT Base Register
     USB0->BDTPAGE1 = (uint8_t)((uint32_t)bd_table>>8);
     USB0->BDTPAGE2 = (uint8_t)((uint32_t)bd_table>>16);
     USB0->BDTPAGE3 = (uint8_t)((uint32_t)bd_table>>24);
-
 
     USB0->INTEN |= USB_INTEN_TOKDNEEN_MASK | USB_INTEN_USBRSTEN_MASK;
 
@@ -389,7 +384,10 @@ void driver_usb_init(void)
     // Disable weak pull downs
     USB0->USBCTRL &= ~(uint8_t)(USB_USBCTRL_PDE_MASK | USB_USBCTRL_SUSP_MASK);
 
-    // enable usb module
+    // Reset ODD
+    USB0->CTL |= USB_CTL_ODDRST_MASK;
+
+    // Enable usb module
     USB0->CTL |= 0x01;
 
     // Pull up enable
@@ -413,20 +411,20 @@ void driver_usb_notify_get_data(uint8_t ep)
 {
     (bd_table[ep<<2].bd_flag._byte = OWN_MCU);
 }
-int cnt_rst = 0;
+extern int app_rest;
 void driver_usb_isr(void)
 {
     // do not use if... else if... else if here.
 
     debug_record_string("\r\n isr, ");
     debug_record((char*)(&(USB0->ISTAT)), 1 );
+    debug_record_string(" ");
 
     if(USB0->ISTAT & USB_ISTAT_USBRST_MASK)
     {
         debug_record_string("reset, ");
         USB0->ISTAT |= 0xff;
         s_handler_reset();
-        cnt_rst++;
         return;
     }
 
@@ -436,7 +434,7 @@ void driver_usb_isr(void)
         s_handler_token();
         USB0->ISTAT |= USB_ISTAT_TOKDNE_MASK;
     }
-
+/*
     if(USB0->ISTAT & USB_ISTAT_STALL_MASK)
     {
         USB0->ISTAT |= USB_ISTAT_STALL_MASK;
@@ -455,7 +453,7 @@ void driver_usb_isr(void)
         USB0->ISTAT |= USB_ISTAT_ERROR_MASK;
         debug_record_string("error, ");
     }
-
+*/
     asm(" nop");
     asm(" nop");
     asm(" nop");

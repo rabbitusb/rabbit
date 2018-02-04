@@ -39,14 +39,11 @@ void process_data_received(void)
     cdc_send((unsigned char *)msg, sizeof(msg));
 }
 
-void debug_show(void);
-
 void usb_main (void)
 {
     driver_usb_init();
     cdc_init(call_back_get_data);
     cdc_wait_enumerate();
-    //debug_show();
     while(1)
     {
         wait_data_arrive();

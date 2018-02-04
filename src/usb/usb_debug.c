@@ -32,11 +32,15 @@ void debug_record(char * buf, int size)
 }
 void debug_record_string(char * buf)
 {
-    int len;
     if(cnt >= (DEBUG_BUF_LEN - 100))
         return; // buffer full
-    len = sprintf(debug_buf+cnt, "%s", buf);
-    cnt += len;
+
+    while(*buf != 0)
+    {
+        debug_buf[cnt] = *buf;
+        cnt++;
+        buf++;
+    }
 }
 #else
 void debug_record(char * buf, int size)
@@ -54,5 +58,6 @@ void debug_show(void)
 {
     //rabbit_printf("%s", debug_buf);
     rabbit_send_string(debug_buf);
+    memset(debug_buf, 0, DEBUG_BUF_LEN);
 }
 

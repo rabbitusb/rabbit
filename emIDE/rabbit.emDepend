@@ -57,16 +57,16 @@
 	<stdio.h>
 	"..\\hal\\hal_uart.h"
 
-1517713263 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_cdc.c
+1517749691 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_cdc.c
 	<stdint.h>
 	"usb_spec.h"
-	"usb_driver.h"
+	"usb_hal.h"
 	"usb_debug.h"
 	"usb_debug.h"
 
 1517385167 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_spec.h
 
-1517674603 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.h
+1517749586 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.h
 
 1517590224 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_debug.h
 
@@ -75,17 +75,18 @@
 	<string.h>
 	"..\\print\\print.h"
 
-1517713448 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_main.c
+1517749558 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_main.c
 	<stdint.h>
-	"usb_driver.h"
+	"usb_hal.h"
 	"usb_cdc.h"
 	"string.h"
 
 1517498122 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_cdc.h
 
-1517499729 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_stack_device.c
+1517749796 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_stack_device.c
 	<stdint.h>
 	"usb_spec.h"
+	"usb_hal.h"
 	"usb_driver.h"
 	"usb_cdc.h"
 
@@ -94,12 +95,13 @@
 	<reent.h>
 	<sys/stat.h>
 
-1517713484 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.c
+1517749723 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_driver.c
 	<stdint.h>
 	<stddef.h>
 	<string.h>
 	"..\\hal\\MKL26Z4.h"
 	"..\\hal\\hal_nvic.h"
+	"usb_hal.h"
 	"usb_driver.h"
 	"usb_cdc.h"
 	"usb_stack_device.h"
@@ -111,4 +113,10 @@
 1517242031 d:\gj_folder\x_plan\code\rabbit\src\\hal\\hal_nvic.h
 
 1517326691 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_stack_device.h
+
+1517749305 source:d:\gj_folder\x_plan\code\rabbit\src\usb\usb_hal.c
+	<stdint.h>
+	"usb_driver.h"
+
+1517749591 d:\gj_folder\x_plan\code\rabbit\src\usb\usb_hal.h
 

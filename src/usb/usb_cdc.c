@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include "usb_spec.h"
-#include "usb_driver.h"
+#include "usb_hal.h"
 #include "usb_debug.h"
 
 #if DEBUG_ENABLE
@@ -85,7 +85,7 @@ void cdc_init(void (call_back_get_data)(uint8_t * buf, int len))
     line_coding.parity    = 0;
     line_coding.bits      = 0x08;
 
-    driver_usb_set_ep_in(EP_IN);
+    //driver_usb_set_ep_in(EP_IN);
 }
 
 
@@ -113,7 +113,7 @@ void cdc_request_device(void)
             debug_record_string("set address, ");
             usb_addr  = setup->value_l;
             usb_state = address;
-            driver_usb_send(EP0,0,0);
+            usb_hal_send(0, EP0, 0, 0);
             break;
 
         case REQUEST_GET_DESCRIPTOR:
@@ -122,27 +122,30 @@ void cdc_request_device(void)
             {
                 case DESCRIPTOR_DEVICE:
                     debug_record_string("des, device");
-                    driver_usb_send(EP0,
-                                    (uint8_t*)device_descriptor,
-                                    sizeof(device_descriptor));
+                    usb_hal_send(0,
+                                 EP0,
+                                 (uint8_t*)device_descriptor,
+                                 sizeof(device_descriptor));
                     break;
 
                 case DESCRIPTOR_CONFIGURATION:
                     debug_record_string("config");
-                    driver_usb_send(EP0,
-                                    (uint8_t*)config_descriptor,
-                                    sizeof(config_descriptor));
+                    usb_hal_send(0,
+                                 EP0,
+                                 (uint8_t*)config_descriptor,
+                                 sizeof(config_descriptor));
                     break;
 
                 case DESCRIPTOR_STRING:
                     debug_record_string("string");
-                    driver_usb_send(EP0,
-                                    (uint8_t*)string_table[setup->value_l],
-                                    string_table[setup->value_l][0]);
+                    usb_hal_send(0,
+                                 EP0,
+                                 (uint8_t*)string_table[setup->value_l],
+                                 string_table[setup->value_l][0]);
                     break;
 
                 default:
-                    driver_usb_send(EP0,0,0);
+                    usb_hal_send(0, EP0, 0, 0);
                     break;
             }
             break;
@@ -151,12 +154,12 @@ void cdc_request_device(void)
             // get this request means enumuation finished.
             //driver_usb_set_interface();
             usb_state = enumerated;
-            driver_usb_send(EP0,0,0);
+            usb_hal_send(0,EP0, 0, 0);
             break;
 
         default:
             // never requested.
-            driver_usb_send(EP0,0,0);
+            usb_hal_send(0, EP0, 0, 0);
             break;
     }
 }
@@ -165,15 +168,15 @@ void cdc_request_class(void)
     switch(setup->req)
     {
         case REQUEST_GET_LINE_CODING:
-            driver_usb_send(EP0,0,0);
+            usb_hal_send(0,EP0,0,0);
             break;
 
         case REQUEST_SET_CONTROL_LINE_STATE:
-            driver_usb_send(EP0,0,0);
+            usb_hal_send(0, EP0,0,0);
             break;
 
         case REQUEST_SET_LINE_CODING:
-            driver_usb_send(EP0,0,0);
+            usb_hal_send(0, EP0,0,0);
             break;
 
         default:
@@ -182,7 +185,7 @@ void cdc_request_class(void)
 }
 void cdc_usb_pid_setup(void)
 {
-    driver_set_toggle_data1();
+    usb_hal_set_toggle_data1(0);
 
     switch(setup->req_type & 0x7f)
     {
@@ -229,13 +232,13 @@ void cdc_entry(S_USB_PARA * para)
             case PID_SETUP:
                 debug_record_string("SET, ");
                 cdc_usb_pid_setup();
-                driver_usb_set_owner_usb(para);
+                usb_hal_rx_next(0, para->ep);
                 break;
 
             case PID_OUT:
                 i = i;
                 debug_record_string("OUT, ");
-                driver_usb_set_owner_usb(para);
+                usb_hal_rx_next(0, para->ep);
                 break;
 
             case PID_IN:
@@ -243,11 +246,11 @@ void cdc_entry(S_USB_PARA * para)
                 if(usb_state == address)
                 {
                     // set address after current transaction finished
-                    driver_set_addr(usb_addr);
+                    usb_hal_set_addr(0, usb_addr);
                     usb_state = ready;
                 }
 
-                driver_usb_send_continous(para->ep);
+                usb_hal_send_continous(0, para->ep);
                 break;
 
             default:
@@ -262,21 +265,19 @@ void cdc_entry(S_USB_PARA * para)
 
 void cdc_send(uint8_t * buf, int len)
 {
-    driver_usb_send(EP_IN, buf, len);
+    usb_hal_send(0, EP_IN, buf, len);
 }
 
 void print_fifo(void);
 void cdc_wait_enumerate(void)
 {
     int i = 0;
-    usb_state = power_on;
     while(usb_state != enumerated)
     {
         i++;
         if(i == 1000*1000*3)
         {
             debug_show();
-            return;
         }
     }
 }

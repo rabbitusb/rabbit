@@ -1,6 +1,7 @@
 
 #include <stdint.h>
 #include "usb_spec.h"
+#include "usb_hal.h"
 #include "usb_driver.h"
 #include "usb_cdc.h"
 
@@ -20,7 +21,7 @@ enum E_EP_LIST
 static void s_ep_ctrl_setup(unsigned char * buf, int len)
 {
     S_SETUP * setup;
-    driver_set_toggle_data1();
+    driver_usb0_set_toggle_data1();
 
     setup = (S_SETUP*)buf;
 
@@ -31,7 +32,7 @@ static void s_ep_ctrl_setup(unsigned char * buf, int len)
             break;
 
         default:
-            driver_usb_send(EP0,0,0);
+            driver_usb0_send(EP0,0,0);
             break;
     }
 }
@@ -43,7 +44,7 @@ static void s_handler_ep_ctrl(int pid, unsigned char * buf, int len)
             s_ep_ctrl_setup(buf, len);
             break;
         default:
-            driver_usb_send(0,0,0);
+            driver_usb0_send(0,0,0);
     }
 }
 /*

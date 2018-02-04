@@ -1,7 +1,7 @@
 
 
 #include <stdint.h>
-#include "usb_driver.h"
+#include "usb_hal.h"
 #include "usb_cdc.h"
 #include "string.h"
 
@@ -41,7 +41,7 @@ void process_data_received(void)
 
 void usb_main (void)
 {
-    driver_usb_init();
+    usb_hal_init(0);
     cdc_init(call_back_get_data);
     cdc_wait_enumerate();
     while(1)

@@ -2,7 +2,7 @@
 
 typedef struct
 {
-    uint8_t   usb;
+    E_USB     usb;
     uint8_t   ep;
     uint8_t   pid;
     uint8_t * buf;

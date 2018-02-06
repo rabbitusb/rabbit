@@ -1,17 +1,14 @@
 
 
-#define DEBUG_ENABLE 0
-
 
 #include <stdint.h>
+#include "..\\usb_config.h"
 #include "..\\usb_spec.h"
 #include "..\\usb_app.h"
 #include "..\\usb_hal.h"
 #include "..\\usb_debug.h"
 
-#if DEBUG_ENABLE
-#include "usb_debug.h"
-#endif
+#if 1 //USB_CFG_CDC_DEV_ENABLE
 
 enum E_USB_STATE
 {
@@ -424,4 +421,10 @@ const uint8_t string_descriptor3[] =
     '0',0x00
 };
 
-
+#else
+// dummy interface implementation, as CDC is not enabled.
+void cdc_init(void (call_back_get_data)(unsigned char * buf, int len)){}
+void cdc_entry(S_USB_PARA * para){}
+void cdc_wait_enumerate(void){}
+void cdc_send(unsigned char * buf, int len){}
+#endif

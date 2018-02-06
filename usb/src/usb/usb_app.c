@@ -7,7 +7,7 @@
 
 void usb_app_init(E_USB usb, E_USB_CLASS cls)
 {
-    usb_hal_init(usb0);
+    usb_hal_init(usb);
     usb_core_set_class(usb, cls);
 }
 

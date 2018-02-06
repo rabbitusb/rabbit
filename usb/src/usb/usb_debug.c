@@ -2,16 +2,20 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "usb_config.h"
 #include "..\\print\\print.h"
 
-#define DEBUG_ENABLE 0
+
+#if DEBUG_ENABLE
+
+
 #define DEBUG_BUF_LEN (3*1024)
 static char debug_buf[DEBUG_BUF_LEN] = {0};
 static const char new_line[] = "\r\n";
 
 
 
-#if DEBUG_ENABLE
+
 static int cnt = 0;
 void debug_record(char * buf, int size)
 {
@@ -42,6 +46,13 @@ void debug_record_string(char * buf)
         buf++;
     }
 }
+void debug_show(void)
+{
+    //rabbit_printf("%s", debug_buf);
+    rabbit_send_string(debug_buf);
+    memset(debug_buf, 0, DEBUG_BUF_LEN);
+}
+
 #else
 void debug_record(char * buf, int size)
 {
@@ -54,10 +65,4 @@ void debug_record_string(char * buf)
 #endif
 
 
-void debug_show(void)
-{
-    //rabbit_printf("%s", debug_buf);
-    rabbit_send_string(debug_buf);
-    memset(debug_buf, 0, DEBUG_BUF_LEN);
-}
 

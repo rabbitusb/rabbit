@@ -7,13 +7,13 @@
 #define PID_ACK      0x2
 
 
-#define REQ_STANDARD             0x00
-#define REQ_SPECIFIC             0x20
-#define REQ_VENDORSPEC           0x40
-#define REQ_STANDARD_DEVICE      0x00
-#define REQ_CLASS_INTERFACE      0x21
-#define REQ_INTERFACE            0x01
-#define REQ_ENDPOINT             0x02
+#define REQ_STANDARD         0x00
+#define REQ_SPECIFIC         0x20
+#define REQ_VENDORSPEC       0x40
+#define REQ_STANDARD_DEVICE  0x00
+#define REQ_CLASS_INTERFACE  0x21
+#define REQ_INTERFACE        0x01
+#define REQ_ENDPOINT         0x02
 
 typedef struct
 {

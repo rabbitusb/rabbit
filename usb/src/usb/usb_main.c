@@ -35,16 +35,16 @@ void wait_data_arrive(void)
 char msg[] = "0000000000111111111122222222220123456789\r\n";
 void process_data_received(void)
 {
-    //const char msg[] = "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\r\n";
-    //cdc_send(buf_cdc_rx, len_rx);
-    cdc_send((unsigned char *)msg, sizeof(msg));
+    // const char msg[] = "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789\r\n";
+    // cdc_send(buf_cdc_rx, len_rx);
+    cdc_dev_send((unsigned char *)msg, sizeof(msg));
 }
 
 void usb_main (void)
 {
     usb_app_init(usb0, usb_class_cdc_dev);
-    cdc_init(call_back_get_data);
-    cdc_wait_enumerate();
+    cdc_dev_init(call_back_get_data);
+    cdc_dev_wait_enumerate();
     while(1)
     {
         wait_data_arrive();

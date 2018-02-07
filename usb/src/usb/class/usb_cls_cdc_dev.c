@@ -12,23 +12,22 @@
 
 enum E_USB_STATE
 {
-    power_on,
-    enumerated,
-    enabled,
-    address,
-    ready
+    enum_powerd,
+    enum_set_addr,
+    enum_addr_ready,
+    enum_configured
 };
 
 enum E_EP_LIST
 {
-    EP0,
-    EP1,
-    EP2,
-    EP3,
+    enum_ep0,
+    enum_ep1,
+    enum_ep2,
+    enum_ep3
 };
 
-#define EP_IN  EP2
-#define EP_OUT EP3
+#define EP_IN  enum_ep2
+#define EP_OUT enum_ep3
 
 #define REQUEST_SET_ADDRESS    5
 #define REQUEST_GET_DESCRIPTOR 6
@@ -65,134 +64,108 @@ typedef struct
     uint8_t   bits;
 }S_CDC_LINE_CODING;
 
-enum E_USB_STATE   usb_state;
-S_SETUP *          setup;
-S_CDC_LINE_CODING  line_coding;
-uint8_t            usb_addr;
+static uint8_t            s_usb_addr;
+static enum E_USB_STATE   s_usb_state;
+static S_CDC_LINE_CODING  s_line_coding;
+
 static void (*p_call_back_get_data)(uint8_t * buf, int len);
 
-
-void cdc_init(void (call_back_get_data)(uint8_t * buf, int len))
-{
-    p_call_back_get_data = call_back_get_data;
-    usb_state            = power_on;
-
-    /* Line Coding Initialization */
-    line_coding.dte_rate  = 9600;
-    line_coding.format    = 0;
-    line_coding.parity    = 0;
-    line_coding.bits      = 0x08;
-
-    //driver_usb_set_ep_in(EP_IN);
-}
+static const uint8_t  device_descriptor[18];
+static const uint8_t  config_descriptor[0x43];
+static const uint8_t* string_table[4];
 
 
-extern const uint8_t string_descriptor0[];
-extern const uint8_t string_descriptor1[];
-extern const uint8_t string_descriptor2[];
-extern const uint8_t string_descriptor3[];
-extern const uint8_t device_descriptor[18];
-extern const uint8_t config_descriptor[0x43];
-
-const uint8_t* string_table[4]=
-{
-    string_descriptor0,
-    string_descriptor1,
-    string_descriptor2,
-    string_descriptor3
-};
-
-//static char buf_debug[100];
-void cdc_request_device(void)
+static void s_req_dev(S_SETUP * setup)
 {
     switch(setup->req)
     {
         case REQUEST_SET_ADDRESS:
             debug_record_string("set address, ");
-            usb_addr  = setup->value_l;
-            usb_state = address;
-            usb_hal_send(0, EP0, 0, 0);
+            s_usb_addr  = setup->value_l;
+            s_usb_state = enum_set_addr;
+            usb_hal_send(usb0, enum_ep0, 0, 0);
             break;
 
         case REQUEST_GET_DESCRIPTOR:
-
             switch(setup->value_h)
             {
                 case DESCRIPTOR_DEVICE:
                     debug_record_string("des, device");
-                    usb_hal_send(0,
-                                 EP0,
+                    usb_hal_send(usb0,
+                                 enum_ep0,
                                  (uint8_t*)device_descriptor,
                                  sizeof(device_descriptor));
                     break;
 
                 case DESCRIPTOR_CONFIGURATION:
                     debug_record_string("config");
-                    usb_hal_send(0,
-                                 EP0,
+                    usb_hal_send(usb0,
+                                 enum_ep0,
                                  (uint8_t*)config_descriptor,
                                  sizeof(config_descriptor));
                     break;
 
                 case DESCRIPTOR_STRING:
                     debug_record_string("string");
-                    usb_hal_send(0,
-                                 EP0,
+                    usb_hal_send(usb0,
+                                 enum_ep0,
                                  (uint8_t*)string_table[setup->value_l],
                                  string_table[setup->value_l][0]);
                     break;
 
                 default:
-                    usb_hal_send(0, EP0, 0, 0);
+                    usb_hal_send(usb0, enum_ep0, 0, 0);
                     break;
             }
             break;
 
         case REQUEST_SET_CONFIG:
             // get this request means enumuation finished.
-            //driver_usb_set_interface();
-            usb_state = enumerated;
-            usb_hal_send(0,EP0, 0, 0);
+            // driver_usb_set_interface();
+            s_usb_state = enum_configured;
+            usb_hal_send(usb0, enum_ep0, 0, 0);
             break;
 
         default:
             // never requested.
-            usb_hal_send(0, EP0, 0, 0);
+            usb_hal_send(usb0, enum_ep0, 0, 0);
             break;
     }
 }
-void cdc_request_class(void)
+static void s_req_cls(S_SETUP * setup)
 {
     switch(setup->req)
     {
         case REQUEST_GET_LINE_CODING:
-            usb_hal_send(0,EP0,0,0);
+            //usb_hal_send(usb0, enum_ep0, (uint8_t*)&s_line_coding, sizeof(s_line_coding));
+            usb_hal_send(usb0, enum_ep0, 0, 0);
             break;
 
         case REQUEST_SET_CONTROL_LINE_STATE:
-            usb_hal_send(0, EP0,0,0);
+            usb_hal_send(usb0, enum_ep0, 0, 0);
             break;
 
         case REQUEST_SET_LINE_CODING:
-            usb_hal_send(0, EP0,0,0);
+            usb_hal_send(usb0,enum_ep0, 0, 0);
             break;
 
         default:
             break;
     }
 }
-void cdc_usb_pid_setup(void)
+static void s_pid_setup(S_SETUP * setup)
 {
-    usb_hal_set_toggle_data1(0);
+    // after getting setup, should set to data1 state
+    usb_hal_set_toggle_data1(usb0);
 
     switch(setup->req_type & 0x7f)
     {
         case REQ_STANDARD_DEVICE:
-            cdc_request_device();
+            s_req_dev(setup);
             break;
 
         case REQ_CLASS_INTERFACE:
-            cdc_request_class();
+            s_req_cls(setup);
             break;
 
         default:
@@ -200,8 +173,56 @@ void cdc_usb_pid_setup(void)
     }
 }
 
-int i = 0;
-void cdc_entry(S_USB_PARA * para)
+static void s_process_ep0(S_USB_PARA * para)
+{
+    // enumeration
+
+    switch(para->pid)
+    {
+        case PID_SETUP:
+            debug_record_string("SET, ");
+            s_pid_setup((S_SETUP*)(para->buf));
+            usb_hal_rx_next(0, para->ep);
+            break;
+
+        case PID_OUT:
+            debug_record_string("OUT, ");
+            usb_hal_rx_next(0, para->ep);
+            break;
+
+        case PID_IN:
+            debug_record_string("IN, ");
+            if(s_usb_state == enum_set_addr)
+            {
+                // set address after current transaction finished
+                usb_hal_set_addr(0, s_usb_addr);
+                s_usb_state = enum_addr_ready;
+            }
+
+            usb_hal_send_continous(0, para->ep);
+            break;
+
+        default:
+            ;
+    }
+}
+
+
+void cdc_dev_init(void (call_back_get_data)(uint8_t * buf, int len))
+{
+    p_call_back_get_data = call_back_get_data;
+    s_usb_state          = enum_powerd;
+
+    /* Line Coding Initialization */
+    s_line_coding.dte_rate  = 9600;
+    s_line_coding.format    = 0;
+    s_line_coding.parity    = 0;
+    s_line_coding.bits      = 0x08;
+
+    // driver_usb_set_ep_in(EP_IN);
+}
+
+void cdc_dev_entry(S_USB_PARA * para)
 {
 /*
     if(para->ep)
@@ -223,37 +244,7 @@ void cdc_entry(S_USB_PARA * para)
 */
     if(para->ep == 0)
     {
-        // enumeration
-        setup = (S_SETUP*)(para->buf);
-        switch(para->pid)
-        {
-            case PID_SETUP:
-                debug_record_string("SET, ");
-                cdc_usb_pid_setup();
-                usb_hal_rx_next(0, para->ep);
-                break;
-
-            case PID_OUT:
-                i = i;
-                debug_record_string("OUT, ");
-                usb_hal_rx_next(0, para->ep);
-                break;
-
-            case PID_IN:
-                debug_record_string("IN, ");
-                if(usb_state == address)
-                {
-                    // set address after current transaction finished
-                    usb_hal_set_addr(0, usb_addr);
-                    usb_state = ready;
-                }
-
-                usb_hal_send_continous(0, para->ep);
-                break;
-
-            default:
-                i = i;
-        }
+        s_process_ep0(para);
     }
     else
     {
@@ -261,16 +252,16 @@ void cdc_entry(S_USB_PARA * para)
     }
 }
 
-void cdc_send(uint8_t * buf, int len)
+void cdc_dev_send(uint8_t * buf, int len)
 {
-    usb_hal_send(0, EP_IN, buf, len);
+    usb_hal_send(usb0, EP_IN, buf, len);
 }
 
-void print_fifo(void);
-void cdc_wait_enumerate(void)
+
+void cdc_dev_wait_enumerate(void)
 {
     int i = 0;
-    while(usb_state != enumerated)
+    while(s_usb_state != enum_configured)
     {
         i++;
         if(i == 1000*1000*3)
@@ -284,7 +275,7 @@ void cdc_wait_enumerate(void)
 //-------------------------------------------
 // descriptors
 //-------------------------------------------
-const uint8_t device_descriptor[18]=
+static const uint8_t device_descriptor[18]=
 {
     0x12,      // blength
     0x01,      // bDescriptor
@@ -302,7 +293,7 @@ const uint8_t device_descriptor[18]=
     0x01       // bNumConfigurations - # of config. at current speed,
 };
 
-const uint8_t config_descriptor[0x43]=
+static const uint8_t config_descriptor[0x43]=
 {
 
     0x09,       // blength
@@ -318,15 +309,15 @@ const uint8_t config_descriptor[0x43]=
     0x32,       // bMaxPower - 200mA
 
     // Interface Descriptor
-    0x09,       //blength
-    0x04,       //bDescriptorType - Interface descriptor
-    0x00,       //bInterfaceNumber - Zero based value identifying the index of the config.
-    0x00,       //bAlternateSetting;
-    0x01,       //bNumEndpoints - 2 endpoints
-    0x02,       //bInterfaceClass - mass storage
-    0x02,       //bInterfaceSubClass - SCSI Transparent command Set
-    0x01,       //bInterfaceProtocol - Bulk-Only transport
-    0x01,       //iInterface - Index to String descriptor
+    0x09,       // blength
+    0x04,       // bDescriptorType - Interface descriptor
+    0x00,       // bInterfaceNumber - Zero based value identifying the index of the config.
+    0x00,       // bAlternateSetting;
+    0x01,       // bNumEndpoints - 2 endpoints
+    0x02,       // bInterfaceClass - mass storage
+    0x02,       // bInterfaceSubClass - SCSI Transparent command Set
+    0x01,       // bInterfaceProtocol - Bulk-Only transport
+    0x01,       // iInterface - Index to String descriptor
 
     0x05,
     0x24,
@@ -343,60 +334,60 @@ const uint8_t config_descriptor[0x43]=
     0x01,
 
     // Endpoint  Descriptor
-    0x07,           //blength
-    0x05,           //bDescriptorType - EndPoint
-    0x81,           //bEndpointAddress
-    0x03,           //bmAttributes
-    0x20,0x00,      //wMaxPacketSize
-    0x02,           //bInterval
+    0x07,           // blength
+    0x05,           // bDescriptorType - EndPoint
+    0x81,           // bEndpointAddress
+    0x03,           // bmAttributes
+    0x20,0x00,      // wMaxPacketSize
+    0x02,           // bInterval
 
     // Interface Descriptor
-    0x09,           //blength
-    0x04,           //bDescriptorType - Interface descriptor
-    0x01,           //bInterfaceNumber - Zero based value identifying the index of the config.
-    0x00,           //bAlternateSetting;
-    0x02,           //bNumEndpoints - 2 endpoints
-    0x0A,           //bInterfaceClass - mass storage
-    0x00,           //bInterfaceSubClass - SCSI Transparent command Set
-    0x00,           //bInterfaceProtocol - Bulk-Only transport
-    0x01,           //iInterface - Index to String descriptor
+    0x09,           // blength
+    0x04,           // bDescriptorType - Interface descriptor
+    0x01,           // bInterfaceNumber - Zero based value identifying the index of the config.
+    0x00,           // bAlternateSetting;
+    0x02,           // bNumEndpoints - 2 endpoints
+    0x0A,           // bInterfaceClass - mass storage
+    0x00,           // bInterfaceSubClass - SCSI Transparent command Set
+    0x00,           // bInterfaceProtocol - Bulk-Only transport
+    0x01,           // iInterface - Index to String descriptor
 
     // Endpoint OUT Descriptor
-    0x07,           //blength
-    0x05,           //bDescriptorType - EndPoint
-    0x82,           //bEndpointAddress
-    0x02,           //bmAttributes
-    0x20,0x00,      //wMaxPacketSize
-    0x00,           //bInterval
+    0x07,           // blength
+    0x05,           // bDescriptorType - EndPoint
+    0x82,           // bEndpointAddress
+    0x02,           // bmAttributes
+    0x20,0x00,      // wMaxPacketSize
+    0x00,           // bInterval
 
     // Endpoint IN Descriptor
-    0x07,           //blength
-    0x05,           //bDescriptorType - EndPoint
-    0x03,           //bEndpointAddress
-    0x02,           //bmAttributes
-    0x20,0x00,      //wMaxPacketSize
-    0x00,           //bInterval
+    0x07,           // blength
+    0x05,           // bDescriptorType - EndPoint
+    0x03,           // bEndpointAddress
+    0x02,           // bmAttributes
+    0x20,0x00,      // wMaxPacketSize
+    0x00,           // bInterval
 };
 
-const uint8_t string_descriptor0[] =
+static const uint8_t string_descriptor0[] =
 {
     0x04,           // bLength;
     0x03,           // bDescriptorType - STRING descriptor
     0x09,0x04       // wLANDID0 - English (American)
 };
 
-const uint8_t string_descriptor1[] =
+static const uint8_t string_descriptor1[] =
 {
-    0x04,           //bLength; 11 bytes
-    0x03,           //bDescriptorType - STRING descriptor
+    0x04,           // bLength; 11 bytes
+    0x03,           // bDescriptorType - STRING descriptor
     'g',0x00,
     'j',0x00,
 };
 
-const uint8_t string_descriptor2[] =
+static const uint8_t string_descriptor2[] =
 {
-    0x12,           //bLength;
-    0x03,           //bDescriptorType - STRING descriptor
+    0x12,           // bLength;
+    0x03,           // bDescriptorType - STRING descriptor
     'U',0x00,
     'S',0x00,
     'B',0x00,
@@ -407,10 +398,10 @@ const uint8_t string_descriptor2[] =
     'T',0x00
 };
 
-const uint8_t string_descriptor3[] =
+static const uint8_t string_descriptor3[] =
 {
-    0x12,       //bLength;
-    0x03,      //bDescriptorType - STRING descriptor
+    0x12,       // bLength;
+    0x03,       // bDescriptorType - STRING descriptor
     'T',0x00,
     'E',0x00,
     'S',0x00,
@@ -421,10 +412,17 @@ const uint8_t string_descriptor3[] =
     '0',0x00
 };
 
+static const uint8_t* string_table[4] =
+{
+    string_descriptor0,
+    string_descriptor1,
+    string_descriptor2,
+    string_descriptor3
+};
 #else
 // dummy interface implementation, as CDC is not enabled.
-void cdc_init(void (call_back_get_data)(unsigned char * buf, int len)){}
-void cdc_entry(S_USB_PARA * para){}
-void cdc_wait_enumerate(void){}
-void cdc_send(unsigned char * buf, int len){}
+void cdc_dev_init(void (call_back_get_data)(unsigned char * buf, int len)){}
+void cdc_dev_entry(S_USB_PARA * para){}
+void cdc_dev_wait_enumerate(void){}
+void cdc_dev_send(unsigned char * buf, int len){}
 #endif

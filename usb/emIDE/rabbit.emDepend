@@ -252,7 +252,7 @@
 
 1517760641 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_app.h
 
-1517991867 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\class\usb_cls_cdc_dev.c
+1517993270 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\class\usb_cls_cdc_dev.c
 	<stdint.h>
 	"..\\usb_config.h"
 	"..\\usb_spec.h"

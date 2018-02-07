@@ -2,6 +2,7 @@
 
 
 #include <stdint.h>
+#include <string.h>
 #include "..\\usb_config.h"
 #include "..\\usb_spec.h"
 #include "..\\usb_app.h"
@@ -10,21 +11,6 @@
 
 #if 1 //USB_CFG_CDC_DEV_ENABLE
 
-enum E_USB_STATE
-{
-    enum_powerd,
-    enum_set_addr,
-    enum_addr_ready,
-    enum_configured
-};
-
-enum E_EP_LIST
-{
-    enum_ep0,
-    enum_ep1,
-    enum_ep2,
-    enum_ep3
-};
 
 #define EP_IN  enum_ep2
 #define EP_OUT enum_ep3
@@ -56,6 +42,30 @@ enum E_EP_LIST
 #define CDC_REQ_CLEAR_FEATURE           0x01
 #define CDC_REQ_SET_FEATURE             0x03
 
+typedef enum
+{
+    enum_powerd,
+    enum_set_addr,
+    enum_addr_ready,
+    enum_configured
+}E_USB_STATE;
+
+typedef enum
+{
+    enum_ep0,
+    enum_ep1,
+    enum_ep2,
+    enum_ep3
+}E_EP_LIST;
+
+typedef enum
+{
+    enum_cmd_init,
+    enum_cmd_set_line_coding
+}E_CMD_STATE;
+
+
+#pragma pack(1)
 typedef struct
 {
     uint32_t  dte_rate;
@@ -63,10 +73,12 @@ typedef struct
     uint8_t   parity;
     uint8_t   bits;
 }S_CDC_LINE_CODING;
+#pragma pack()
 
-static uint8_t            s_usb_addr;
-static enum E_USB_STATE   s_usb_state;
-static S_CDC_LINE_CODING  s_line_coding;
+static uint8_t            s_usb_addr  = 0;
+static E_USB_STATE        s_usb_state = enum_powerd;
+static E_CMD_STATE        s_cmd_state = enum_cmd_init;
+static S_CDC_LINE_CODING  s_line_coding = {0};
 
 static void (*p_call_back_get_data)(uint8_t * buf, int len);
 
@@ -136,24 +148,25 @@ static void s_req_cls(S_SETUP * setup)
 {
     switch(setup->req)
     {
-        case REQUEST_GET_LINE_CODING:
-            //usb_hal_send(usb0, enum_ep0, (uint8_t*)&s_line_coding, sizeof(s_line_coding));
-            usb_hal_send(usb0, enum_ep0, 0, 0);
-            break;
-
         case REQUEST_SET_CONTROL_LINE_STATE:
             usb_hal_send(usb0, enum_ep0, 0, 0);
             break;
 
+        case REQUEST_GET_LINE_CODING:
+            usb_hal_send(usb0, enum_ep0, (uint8_t*)&s_line_coding, sizeof(s_line_coding));
+            break;
+
         case REQUEST_SET_LINE_CODING:
-            usb_hal_send(usb0,enum_ep0, 0, 0);
+            // prepare to set line coding in .
+            s_cmd_state = enum_cmd_set_line_coding;
+            usb_hal_send(usb0, enum_ep0, 0, 0);
             break;
 
         default:
             break;
     }
 }
-static void s_pid_setup(S_SETUP * setup)
+static void s_pck_setup(S_SETUP * setup)
 {
     // after getting setup, should set to data1 state
     usb_hal_set_toggle_data1(usb0);
@@ -172,7 +185,15 @@ static void s_pid_setup(S_SETUP * setup)
             break;
     }
 }
+static void s_pck_out(S_USB_PARA * para)
+{
+    if(s_cmd_state == enum_cmd_set_line_coding)
+    {
+        memcpy(&s_line_coding, para->buf, sizeof(s_line_coding));
+        s_cmd_state = enum_cmd_init;
+    }
 
+}
 static void s_process_ep0(S_USB_PARA * para)
 {
     // enumeration
@@ -181,12 +202,13 @@ static void s_process_ep0(S_USB_PARA * para)
     {
         case PID_SETUP:
             debug_record_string("SET, ");
-            s_pid_setup((S_SETUP*)(para->buf));
+            s_pck_setup((S_SETUP*)(para->buf));
             usb_hal_rx_next(0, para->ep);
             break;
 
         case PID_OUT:
             debug_record_string("OUT, ");
+            s_pck_out(para);
             usb_hal_rx_next(0, para->ep);
             break;
 

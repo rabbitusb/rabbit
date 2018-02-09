@@ -142,17 +142,10 @@ static uint8_t s_load(void)
 static uint8_t s_ep_to_index(uint8_t ep)
 {
     uint8_t index;
-    switch(ep)
-    {
-        case 0:
-            index = index_ep0_out_even;
-            break;
-        case 3:
-            index = index_ep3_out_even;
-            break;
-        default:
-            ;
-    }
+    if(ep == 0)
+        index = index_ep0_out_even;
+    else if(ep == 2)
+        index = index_ep2_out_even;
 
     return index;
 }
@@ -341,7 +334,7 @@ void driver_usb0_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
 
     if(ep == 0)
     {
-        // control point
+        // control ep
         debug_record_string("tg: ");
         debug_record((char*)&toggle_data, 1);
         bd_table[ep_entry].bd_flag._byte = toggle_data;
@@ -349,32 +342,11 @@ void driver_usb0_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
     }
     else if(ep == 2)
     {
-        // update_toggle_data();
-        // driver_usb0_set_toggle_data1();
-        static int flag = 0;
-
-        if(flag == 0)
-        {
-            driver_usb0_set_toggle_data0();
-            flag = 1;
-        }
-        else
-        {
-            driver_usb0_set_toggle_data1();
-            flag = 0;
-        }
-
-
+        // cdc data ep
+        driver_usb0_set_toggle_data0();
         bd_table[ep_entry].bd_flag._byte = toggle_data;
-    }
-/*
-    if(ep == ep_in)
-    {
-        // send data to CDC
         update_toggle_data();
-        bd_table[ep_entry].bd_flag._byte = toggle_data;
     }
-*/
 }
 
 

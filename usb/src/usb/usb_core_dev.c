@@ -26,27 +26,18 @@ void usb_core_dev_entry(S_USB_PARA * para)
     A usb controller run a predefined class on it.
     It can be only one class, also can be a composite class.
 */
-    switch(cls)
-    {
-        case e_usb_class_hid_dev:
-            break;
-
-        case e_usb_class_cdc_dev:
-            cdc_dev_entry(para);
-            break;
-
-        case e_usb_class_msc_dev:
-            break;
-
-        case e_usb_class_hid_hid_dev:
-            break;
-
-        case e_usb_class_cdc_msc_dev:
-            break;
-
-        default:
-            break;
-    }
+    if(cls == e_usb_class_hid_dev)
+        ;
+    else if(cls == e_usb_class_hid_dev)
+        ;
+    else if(cls == e_usb_class_cdc_dev)
+        cdc_dev_entry(para);
+    else if(cls == e_usb_class_msc_dev)
+        ;
+    else if(cls == e_usb_class_hid_hid_dev)
+        ;
+    else if(cls == e_usb_class_cdc_msc_dev)
+        ;
 }
 
 

@@ -15,7 +15,7 @@
 
 #define EP_CTRL      enum_ep0
 #define EP_CDC_IN    enum_ep2
-#define EP_CDC_OUT   enum_ep3
+#define EP_CDC_OUT   enum_ep2
 
 #define REQUEST_SET_ADDRESS    5
 #define REQUEST_GET_DESCRIPTOR 6
@@ -220,7 +220,7 @@ static void s_process_ep_ctrl(S_USB_PARA * para)
         usb_hal_send_continous(0, para->ep);
     }
 }
-static void s_process_ep_cdc_out(S_USB_PARA * para)
+static void s_process_ep_cdc(S_USB_PARA * para)
 {
     if(para->pid == PID_OUT)
     {
@@ -256,7 +256,7 @@ void cdc_dev_entry(S_USB_PARA * para)
     }
     else if(para->ep == EP_CDC_OUT)
     {
-        s_process_ep_cdc_out(para);
+        s_process_ep_cdc(para);
     }
 }
 

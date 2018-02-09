@@ -8,12 +8,14 @@
 #include "..\\usb_app.h"
 #include "..\\usb_hal.h"
 #include "..\\usb_debug.h"
+#include ".\\usb_cls_cdc_dev.h"
+#include "..\\app\\rabbit_usb.h"
 
 #if 1 //USB_CFG_CDC_DEV_ENABLE
 
-
-#define EP_IN  enum_ep2
-#define EP_OUT enum_ep3
+#define EP_CTRL      enum_ep0
+#define EP_CDC_IN    enum_ep2
+#define EP_CDC_OUT   enum_ep3
 
 #define REQUEST_SET_ADDRESS    5
 #define REQUEST_GET_DESCRIPTOR 6
@@ -44,7 +46,7 @@
 
 typedef enum
 {
-    enum_powerd,
+    enum_default,
     enum_set_addr,
     enum_addr_ready,
     enum_configured
@@ -76,11 +78,9 @@ typedef struct
 #pragma pack()
 
 static uint8_t            s_usb_addr  = 0;
-static E_USB_STATE        s_usb_state = enum_powerd;
+static E_USB_STATE        s_usb_state = enum_default;
 static E_CMD_STATE        s_cmd_state = enum_cmd_init;
 static S_CDC_LINE_CODING  s_line_coding = {0};
-
-static void (*p_call_back_get_data)(uint8_t * buf, int len);
 
 static const uint8_t  device_descriptor[18];
 static const uint8_t  config_descriptor[0x43];
@@ -194,46 +194,50 @@ static void s_pck_out(S_USB_PARA * para)
     }
 
 }
-static void s_process_ep0(S_USB_PARA * para)
+static void s_process_ep_ctrl(S_USB_PARA * para)
 {
     // enumeration
 
-    switch(para->pid)
+    if(para->pid == PID_SETUP)
     {
-        case PID_SETUP:
-            debug_record_string("SET, ");
-            s_pck_setup((S_SETUP*)(para->buf));
-            usb_hal_rx_next(0, para->ep);
-            break;
+        s_pck_setup((S_SETUP*)(para->buf));
+        usb_hal_rx_next(usb0, para->ep);
+    }
+    else if(para->pid == PID_OUT)
+    {
+        s_pck_out(para);
+        usb_hal_rx_next(usb0, para->ep);
+    }
+    else if(para->pid == PID_IN)
+    {
+        if(s_usb_state == enum_set_addr)
+        {
+            // set address after current transaction finished
+            usb_hal_set_addr(0, s_usb_addr);
+            s_usb_state = enum_addr_ready;
+        }
 
-        case PID_OUT:
-            debug_record_string("OUT, ");
-            s_pck_out(para);
-            usb_hal_rx_next(0, para->ep);
-            break;
-
-        case PID_IN:
-            debug_record_string("IN, ");
-            if(s_usb_state == enum_set_addr)
-            {
-                // set address after current transaction finished
-                usb_hal_set_addr(0, s_usb_addr);
-                s_usb_state = enum_addr_ready;
-            }
-
-            usb_hal_send_continous(0, para->ep);
-            break;
-
-        default:
-            ;
+        usb_hal_send_continous(0, para->ep);
+    }
+}
+static void s_process_ep_cdc_out(S_USB_PARA * para)
+{
+    if(para->pid == PID_OUT)
+    {
+        // Call back to app.
+        // Do not want to use function pointer here.
+        rabbit_usb_cdc_dev_rx(0, para->buf, para->len);
+        usb_hal_rx_next(usb0, para->ep);
+    }
+    else if(para->pid == PID_IN)
+    {
+        usb_hal_send_continous(0, para->ep);
     }
 }
 
-
-void cdc_dev_init(void (call_back_get_data)(uint8_t * buf, int len))
+void cdc_dev_init(void)
 {
-    p_call_back_get_data = call_back_get_data;
-    s_usb_state          = enum_powerd;
+    s_usb_state          = enum_default;
 
     /* Line Coding Initialization */
     s_line_coding.dte_rate  = 9600;
@@ -246,41 +250,29 @@ void cdc_dev_init(void (call_back_get_data)(uint8_t * buf, int len))
 
 void cdc_dev_entry(S_USB_PARA * para)
 {
-/*
-    if(para->ep)
+    if(para->ep == EP_CTRL)
     {
-        // data
-        if(dir == direction_rx)
-        {
-            // let task process it
-            driver_usb_notify_get_data(para->ep);
-            p_call_back_get_data(para->buf, para->len);
-            driver_usb_notify_next_rx(para->ep);
-        }
-        else
-        {
-            // tx
-            //driver_usb_send_continous(para->ep);
-        }
+        s_process_ep_ctrl(para);
     }
-*/
-    if(para->ep == 0)
+    else if(para->ep == EP_CDC_OUT)
     {
-        s_process_ep0(para);
-    }
-    else
-    {
-        debug_record_string("non ep0,");
+        s_process_ep_cdc_out(para);
     }
 }
 
-void cdc_dev_send(uint8_t * buf, int len)
+void rabbit_usb_cdc_dev_tx(uint32_t cdc_index, uint8_t* buf, uint32_t len)
 {
-    usb_hal_send(usb0, EP_IN, buf, len);
+    uint8_t ep_tx;
+
+    // convert cdc_index to ep
+    ep_tx = EP_CDC_IN;
+
+    usb_hal_send(usb0, ep_tx, buf, len);
 }
 
 
-void cdc_dev_wait_enumerate(void)
+
+void rabbit_usb_wait_enumerate(void)
 {
     int i = 0;
     while(s_usb_state != enum_configured)
@@ -377,18 +369,18 @@ static const uint8_t config_descriptor[0x43]=
     // Endpoint OUT Descriptor
     0x07,           // blength
     0x05,           // bDescriptorType - EndPoint
-    0x82,           // bEndpointAddress
-    0x02,           // bmAttributes
-    0x20,0x00,      // wMaxPacketSize
-    0x00,           // bInterval
+    0x82,           // in ep 2
+    0x02,           // bulk
+    0x20,0x00,      // max package size for this ep is 32 byte
+    0x00,           // interval
 
     // Endpoint IN Descriptor
-    0x07,           // blength
-    0x05,           // bDescriptorType - EndPoint
-    0x03,           // bEndpointAddress
-    0x02,           // bmAttributes
-    0x20,0x00,      // wMaxPacketSize
-    0x00,           // bInterval
+    0x07,           // descriptor length
+    0x05,           // ep descriptor
+    EP_CDC_OUT,     // out ep, CDC_EP_OUT
+    0x02,           // bulk
+    0x20,0x00,      // max package size for this ep is 32 byte
+    0x00,           // interval
 };
 
 static const uint8_t string_descriptor0[] =

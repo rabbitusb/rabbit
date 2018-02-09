@@ -2,11 +2,11 @@
 
 typedef enum
 {
-    usb_class_hid_dev,
-    usb_class_cdc_dev,
-    usb_class_msc_dev,
-    usb_class_hid_hid_dev,
-    usb_class_cdc_msc_dev
+    e_usb_class_hid_dev,
+    e_usb_class_cdc_dev,
+    e_usb_class_msc_dev,
+    e_usb_class_hid_hid_dev,
+    e_usb_class_cdc_msc_dev
 }E_USB_CLASS;
 
 typedef enum
@@ -22,7 +22,7 @@ typedef enum
     usb_end
 }E_USB;
 
-void usb_app_init(E_USB usb, E_USB_CLASS cls);
+void rabbit_usb_init(E_USB usb, E_USB_CLASS cls);
 
 
 

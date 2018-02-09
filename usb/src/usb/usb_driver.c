@@ -94,7 +94,7 @@ __attribute__((aligned(512))) static S_BD bd_table[16]; // for 4 EP
 static uint8_t   ep_buf[BUF_SIZE_OF_ONE_EP * EP_COUNT * BUF_COUNT_IN_EACH_EP];
 static uint8_t * p_data;
 static uint32_t  counter;
-static uint8_t   ep_in;
+
 // ------------------------------------------------
 static void update_toggle_data(void)
 {
@@ -211,6 +211,69 @@ static void s_bd_init(void)
     bd_table[index_ep0_in_odd].cnt             = 0;
     bd_table[index_ep0_in_odd].addr            = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep0_in_odd);
     bd_table[index_ep0_in_odd].bd_flag._byte   = OWN_MCU;
+    // ---------------------------------------------------------------------------------------------------
+
+    // EP1 OUT, rx
+    bd_table[index_ep1_out_even].cnt           = BUF_SIZE_OF_ONE_EP;
+    bd_table[index_ep1_out_even].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep1_out_even);
+    bd_table[index_ep1_out_even].bd_flag._byte = OWN_SIE;
+
+    // EP1 OUT, rx
+    bd_table[index_ep1_out_odd].cnt            = BUF_SIZE_OF_ONE_EP;
+    bd_table[index_ep1_out_odd].addr           = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep1_out_odd);
+    bd_table[index_ep1_out_odd].bd_flag._byte  = OWN_MCU;
+
+    // EP1 IN, tx
+    bd_table[index_ep1_in_even].cnt            = 0;
+    bd_table[index_ep1_in_even].addr           = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep1_in_even);
+    bd_table[index_ep1_in_even].bd_flag._byte  = OWN_MCU;
+
+    // EP1 IN, tx
+    bd_table[index_ep1_in_odd].cnt             = 0;
+    bd_table[index_ep1_in_odd].addr            = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep1_in_odd);
+    bd_table[index_ep1_in_odd].bd_flag._byte   = OWN_MCU;
+    // ---------------------------------------------------------------------------------------------------
+
+    // EP2 OUT, rx
+    bd_table[index_ep2_out_even].cnt           = BUF_SIZE_OF_ONE_EP;
+    bd_table[index_ep2_out_even].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep2_out_even);
+    bd_table[index_ep2_out_even].bd_flag._byte = OWN_SIE;
+
+    // EP2 OUT, rx
+    bd_table[index_ep2_out_odd].cnt            = BUF_SIZE_OF_ONE_EP;
+    bd_table[index_ep2_out_odd].addr           = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep2_out_odd);
+    bd_table[index_ep2_out_odd].bd_flag._byte  = OWN_MCU;
+
+    // EP2 IN, tx
+    bd_table[index_ep2_in_even].cnt            = 0;
+    bd_table[index_ep2_in_even].addr           = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep2_in_even);
+    bd_table[index_ep2_in_even].bd_flag._byte  = OWN_MCU;
+
+    // EP2 IN, tx
+    bd_table[index_ep2_in_odd].cnt             = 0;
+    bd_table[index_ep2_in_odd].addr            = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep2_in_odd);
+    bd_table[index_ep2_in_odd].bd_flag._byte   = OWN_MCU;
+    // ---------------------------------------------------------------------------------------------------
+
+    // EP3 OUT, rx
+    bd_table[index_ep3_out_even].cnt           = BUF_SIZE_OF_ONE_EP;
+    bd_table[index_ep3_out_even].addr          = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep3_out_even);
+    bd_table[index_ep3_out_even].bd_flag._byte = OWN_SIE;
+
+    // EP3 OUT, rx
+    bd_table[index_ep3_out_odd].cnt            = BUF_SIZE_OF_ONE_EP;
+    bd_table[index_ep3_out_odd].addr           = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep3_out_odd);
+    bd_table[index_ep3_out_odd].bd_flag._byte  = OWN_MCU;
+
+    // EP3 IN, tx
+    bd_table[index_ep3_in_even].cnt            = 0;
+    bd_table[index_ep3_in_even].addr           = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep3_in_even);
+    bd_table[index_ep3_in_even].bd_flag._byte  = OWN_MCU;
+
+    // EP3 IN, tx
+    bd_table[index_ep3_in_odd].cnt             = 0;
+    bd_table[index_ep3_in_odd].addr            = (uint32_t)(ep_buf + BUF_SIZE_OF_ONE_EP*index_ep3_in_odd);
+    bd_table[index_ep3_in_odd].bd_flag._byte   = OWN_MCU;
 }
 
 static void s_handler_reset(void)
@@ -257,7 +320,6 @@ void driver_usb0_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
         M->USB     0
         M->USB     1
     */
-    ep_in    = ep;
     ep_entry = ep*4 + 2; // + usb_tx_odd[ep];
 
     debug_record_string(" ep_en:");
@@ -284,6 +346,26 @@ void driver_usb0_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
         debug_record((char*)&toggle_data, 1);
         bd_table[ep_entry].bd_flag._byte = toggle_data;
         update_toggle_data();
+    }
+    else if(ep == 2)
+    {
+        // update_toggle_data();
+        // driver_usb0_set_toggle_data1();
+        static int flag = 0;
+
+        if(flag == 0)
+        {
+            driver_usb0_set_toggle_data0();
+            flag = 1;
+        }
+        else
+        {
+            driver_usb0_set_toggle_data1();
+            flag = 0;
+        }
+
+
+        bd_table[ep_entry].bd_flag._byte = toggle_data;
     }
 /*
     if(ep == ep_in)
@@ -363,6 +445,12 @@ void driver_usb0_init(void)
 
     // Enable EP0
     USB0->ENDPOINT[0].ENDPT = 0x0D;
+    // Enable EP1
+    USB0->ENDPOINT[1].ENDPT = 0x0D;
+    // Enable EP2
+    USB0->ENDPOINT[2].ENDPT = 0x0D;
+    // Enable EP3
+    USB0->ENDPOINT[3].ENDPT = 0x0D;
 
     // Disable weak pull downs
     USB0->USBCTRL &= ~(uint8_t)(USB_USBCTRL_PDE_MASK | USB_USBCTRL_SUSP_MASK);

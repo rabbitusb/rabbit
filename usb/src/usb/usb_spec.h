@@ -1,5 +1,4 @@
 
-#define EP_CTRL 0
 
 #define PID_SETUP    0xd
 #define PID_OUT      0x1

@@ -12,6 +12,9 @@ E_USB_CLASS usb_class[usb_end];
 void usb_core_set_class(E_USB usb, E_USB_CLASS cls)
 {
     usb_class[usb] = cls;
+
+    if(cls == e_usb_class_cdc_dev)
+        cdc_dev_init();
 }
 void usb_core_dev_entry(S_USB_PARA * para)
 {
@@ -25,20 +28,20 @@ void usb_core_dev_entry(S_USB_PARA * para)
 */
     switch(cls)
     {
-        case usb_class_hid_dev:
+        case e_usb_class_hid_dev:
             break;
 
-        case usb_class_cdc_dev:
+        case e_usb_class_cdc_dev:
             cdc_dev_entry(para);
             break;
 
-        case usb_class_msc_dev:
+        case e_usb_class_msc_dev:
             break;
 
-        case usb_class_hid_hid_dev:
+        case e_usb_class_hid_hid_dev:
             break;
 
-        case usb_class_cdc_msc_dev:
+        case e_usb_class_cdc_msc_dev:
             break;
 
         default:

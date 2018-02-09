@@ -176,7 +176,7 @@
 	"usb_debug.h"
 	"usb_debug.h"
 
-1517986794 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_spec.h
+1518195987 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_spec.h
 
 1517847121 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_hal.h
 
@@ -188,7 +188,7 @@
 	"usb_config.h"
 	"..\\print\\print.h"
 
-1517761962 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_driver.c
+1518195229 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_driver.c
 	<stdint.h>
 	<stddef.h>
 	<string.h>
@@ -216,12 +216,12 @@
 	"usb_driver.h"
 	"usb_app.h"
 
-1517990586 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_main.c
+1518197239 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_main.c
 	<stdint.h>
 	"usb_app.h"
 	"usb_hal.h"
-	".\\class\\usb_cls_cdc_dev.h"
 	"string.h"
+	".\\app\\rabbit_usb.h"
 
 1517749796 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_stack_device.c
 	<stdint.h>
@@ -235,7 +235,7 @@
 	<reent.h>
 	<sys/stat.h>
 
-1517988985 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_core_dev.c
+1518195090 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_core_dev.c
 	<stdint.h>
 	"usb_spec.h"
 	"usb_app.h"
@@ -244,35 +244,40 @@
 
 1517760482 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_core_dev.h
 
-1517846798 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_app.c
+1518196633 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_app.c
 	<stdint.h>
 	"usb_app.h"
 	"usb_hal.h"
 	"usb_core_dev.h"
 
-1517760641 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_app.h
+1518196626 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_app.h
 
-1517993270 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\class\usb_cls_cdc_dev.c
+1518197129 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\class\usb_cls_cdc_dev.c
 	<stdint.h>
+	<string.h>
 	"..\\usb_config.h"
 	"..\\usb_spec.h"
 	"..\\usb_app.h"
 	"..\\usb_hal.h"
 	"..\\usb_debug.h"
+	".\\usb_cls_cdc_dev.h"
+	"..\\app\\rabbit_usb.h"
 
-1517986794 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\usb_spec.h
+1518195987 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\usb_spec.h
 
-1517760641 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\usb_app.h
+1518196626 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\usb_app.h
 
 1517847121 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\usb_hal.h
 
 1517590224 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\usb_debug.h
 
-1517989015 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\class\\usb_cls_cdc_dev.h
+1518197090 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\class\\usb_cls_cdc_dev.h
 
-1517761293 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\class\\usb_cls_cdc_dev.h
+1518197090 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\class\\usb_cls_cdc_dev.h
 
 1517885020 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\usb_config.h
 
 1517885020 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_config.h
+
+1518197095 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\app\\rabbit_usb.h
 

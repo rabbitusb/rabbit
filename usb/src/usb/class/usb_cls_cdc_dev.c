@@ -327,31 +327,30 @@ static const uint8_t config_descriptor[0x43]=
     0x02,           // bInterval
 
     // Interface Descriptor
-    0x09,           // blength
-    0x04,           // bDescriptorType - Interface descriptor
-    0x01,           // bInterfaceNumber - Zero based value identifying the index of the config.
-    0x00,           // bAlternateSetting;
-    0x02,           // bNumEndpoints - 2 endpoints
-    0x0A,           // bInterfaceClass - mass storage
-    0x00,           // bInterfaceSubClass - SCSI Transparent command Set
-    0x00,           // bInterfaceProtocol - Bulk-Only transport
-    0x01,           // iInterface - Index to String descriptor
+    0x09,           // len
+    0x04,           // ep - interface
+    0x01,           // number
+    0x00,           // alternate setting;
+    0x02,           // include 2 endpoints
+    0x0A,           // class
+    0x00,           // subclass
+    0x00,           // bulk
+    0x01,           // index of string descriptor
 
-    // Endpoint OUT Descriptor
-    0x07,           // blength
-    0x05,           // bDescriptorType - EndPoint
-    0x82,           // in ep 2
-    0x02,           // bulk
-    0x20,0x00,      // max package size for this ep is 32 byte
-    0x00,           // interval
 
-    // Endpoint IN Descriptor
-    0x07,           // descriptor length
-    0x05,           // ep descriptor
-    EP_CDC_OUT,     // out ep, CDC_EP_OUT
-    0x02,           // bulk
-    0x20,0x00,      // max package size for this ep is 32 byte
-    0x00,           // interval
+    0x07,              // len
+    0x05,              // ep - descriptor
+    0x80|EP_CDC_IN,    // in, EP_CDC_IN
+    0x02,              // bulk
+    0x20,0x00,         // max package size for this ep is 32 byte
+    0x00,              // interval
+
+    0x07,              // len
+    0x05,              // ep - descriptor
+    0x00|EP_CDC_OUT,   // out, CDC_EP_OUT
+    0x02,              // bulk
+    0x20,0x00,         // max package size for this ep is 32 byte
+    0x00,              // interval
 };
 
 static const uint8_t string_descriptor0[] =

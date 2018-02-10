@@ -150,13 +150,11 @@
 	"stdint.h"
 	"MKL26Z4.h"
 
-1518250258 source:d:\gj_folder\x_plan\code\rabbit\usb\src\main.c
-	<stdint.h>
-	<stdbool.h>
+1518262413 source:d:\gj_folder\x_plan\code\rabbit\usb\src\main.c
 	".\\hal\\hal_uart.h"
 	".\\hal\\hal_mcg.h"
 	".\\print\\print.h"
-	".\\usb\\app\\rabbit_usb.h"
+	".\\demo\\demo_cdc.h"
 
 1517236511 d:\gj_folder\x_plan\code\rabbit\usb\src\\hal\\hal_uart.h
 
@@ -250,7 +248,7 @@
 
 1518249289 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_app.h
 
-1518253807 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\class\usb_cls_cdc_dev.c
+1518263255 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\class\usb_cls_cdc_dev.c
 	<stdint.h>
 	<string.h>
 	"..\\usb_config.h"
@@ -276,7 +274,9 @@
 
 1517885020 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\usb_config.h
 
-1518249311 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\app\\rabbit_usb.h
+1518262317 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\app\\rabbit_usb.h
+	<stdint.h>
+	<stdbool.h>
 
 1518253119 source:d:\gj_folder\x_plan\code\rabbit\usb\src\usb\driver\usb_driver.c
 	<stdint.h>
@@ -308,7 +308,9 @@
 	"..\\hal\\usb_hal.h"
 	"..\\usb_core_dev.h"
 
-1518249311 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\app\rabbit_usb.h
+1518262317 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\app\rabbit_usb.h
+	<stdint.h>
+	<stdbool.h>
 
 1518252391 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\hal\\usb_hal.h
 
@@ -320,7 +322,14 @@
 
 1518227141 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\\driver\\usb_driver.h
 
-1518249311 d:\gj_folder\x_plan\code\rabbit\usb\src\\usb\\app\\rabbit_usb.h
+1518262317 d:\gj_folder\x_plan\code\rabbit\usb\src\\usb\\app\\rabbit_usb.h
+	<stdint.h>
+	<stdbool.h>
 
 1518252391 d:\gj_folder\x_plan\code\rabbit\usb\src\usb\hal\\usb_hal.h
+
+1518262641 source:d:\gj_folder\x_plan\code\rabbit\usb\src\demo\demo_cdc.c
+	"..\\usb\\app\\rabbit_usb.h"
+
+1518262251 d:\gj_folder\x_plan\code\rabbit\usb\src\\demo\\demo_cdc.h
 

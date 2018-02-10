@@ -1,8 +1,8 @@
 
 #include <stdint.h>
-#include "usb_app.h"
-#include "usb_hal.h"
-#include "usb_core_dev.h"
+#include "rabbit_usb.h"
+#include "..\\hal\\usb_hal.h"
+#include "..\\usb_core_dev.h"
 
 
 void rabbit_usb_init(E_USB usb, E_USB_CLASS cls)

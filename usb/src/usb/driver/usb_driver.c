@@ -4,13 +4,15 @@
 #include <stddef.h>
 #include <string.h>
 #include "..\\..\\hal\\MKL26Z4.h"      // register definition
-#include "..\\usb_app.h"               // app callback importing
-#include "..\\usb_hal.h"               // need to construct S_USB_PARA for rabbit stack
-#include "usb_driver.h"                // need to use api in itself
-#include "..\\usb_core_dev.h"          // core entry call back
-#include "..\\usb_debug.h"             // debug printf
-#include "..\\usb_spec.h"              // use to judge PID
 #include "..\\..\\hal\\hal_nvic.h"     // use to enable IRQ
+
+#include "..\\app\\rabbit_usb.h"        // app callback importing
+#include "..\\hal\\usb_hal.h"           // need to construct S_USB_PARA for rabbit stack
+#include "..\\class\\usb_cls_cdc_dev.h" // reset class
+#include "..\\usb_core_dev.h"           // core entry call back
+#include "..\\usb_debug.h"              // debug printf
+#include "..\\usb_spec.h"               // use to judge PID
+#include "usb_driver.h"                 // need to use api in itself
 
 #define USB_IRQ_NUMBER 0x18
 
@@ -273,6 +275,7 @@ static void s_handler_reset(void)
 {
     send_count = 0;
     driver_usb0_set_addr(0);
+    cdc_dev_init();
 }
 
 static void s_handler_token(void)

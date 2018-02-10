@@ -2,8 +2,8 @@
 
 #include <stdint.h>
 #include "usb_spec.h"
-#include "usb_app.h"
-#include "usb_hal.h"
+#include ".\\app\\rabbit_usb.h"
+#include ".\\hal\\usb_hal.h"
 #include ".\\class\\usb_cls_cdc_dev.h"
 
 E_USB_CLASS usb_class[usb_end];

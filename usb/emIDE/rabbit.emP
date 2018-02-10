@@ -105,6 +105,9 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/print/print.h" />
+		<Unit filename="../src/usb/app/rabbit_usb.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../src/usb/app/rabbit_usb.h" />
 		<Unit filename="../src/usb/class/usb_cls_cdc_dev.c">
 			<Option compilerVar="CC" />
@@ -114,10 +117,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/usb/driver/usb_driver.h" />
-		<Unit filename="../src/usb/usb_app.c">
+		<Unit filename="../src/usb/hal/usb_hal.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../src/usb/usb_app.h" />
+		<Unit filename="../src/usb/hal/usb_hal.h" />
 		<Unit filename="../src/usb/usb_config.h" />
 		<Unit filename="../src/usb/usb_core_dev.c">
 			<Option compilerVar="CC" />
@@ -127,13 +130,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/usb/usb_debug.h" />
-		<Unit filename="../src/usb/usb_hal.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../src/usb/usb_hal.h" />
-		<Unit filename="../src/usb/usb_main.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="../src/usb/usb_spec.h" />
 		<Unit filename="flash.ld" />
 		<Unit filename="syscalls.c">

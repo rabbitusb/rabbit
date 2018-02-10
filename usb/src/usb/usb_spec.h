@@ -14,6 +14,32 @@
 #define REQ_INTERFACE        0x01
 #define REQ_ENDPOINT         0x02
 
+#define REQ_SET_ADDR       5
+#define REQ_GET_DES        6
+#define REQ_SET_CONFIG     9
+
+#define DES_DEVICE          1
+#define DES_CONFIGURATION   2
+#define DES_STRING          3
+#define DES_INTERFACE       4
+#define DES_ENDPOINT        5
+#define DES_DEVICE_QUALIFIE 6
+#define DES_INTERFACE_POWER 8
+
+#define REQ_CDC_SET_LINE_CODING        0x20
+#define REQ_CDC_GET_LINE_CODING        0x21
+#define REQ_CDC_SET_CONTROL_LINE_STATE 0x22
+
+#define REQ_CDC_WAITING_FOR_ENUMERATION 0x00
+#define REQ_CDC_SET_LINE_CODING         0x20
+#define REQ_CDC_GET_LINE_CODING         0x21
+#define REQ_CDC_SET_CONTROL_LINE_STATE  0x22
+#define REQ_CDC_LOADER_MODE             0xAA
+#define REQ_CDC_GET_INTERFACE           0x0A
+#define REQ_CDC_GET_STATUS              0x00
+#define REQ_CDC_CLEAR_FEATURE           0x01
+#define REQ_CDC_SET_FEATURE             0x03
+
 typedef struct
 {
     uint8_t req_type;

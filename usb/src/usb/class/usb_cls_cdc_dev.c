@@ -5,11 +5,11 @@
 #include <string.h>
 #include "..\\usb_config.h"
 #include "..\\usb_spec.h"
-#include "..\\usb_app.h"
-#include "..\\usb_hal.h"
+#include "..\\app\\rabbit_usb.h"
+#include "..\\hal\\usb_hal.h"
 #include "..\\usb_debug.h"
 #include ".\\usb_cls_cdc_dev.h"
-#include "..\\app\\rabbit_usb.h"
+
 
 #if 1 //USB_CFG_CDC_DEV_ENABLE
 
@@ -17,32 +17,6 @@
 #define EP_CDC_IN    enum_ep2
 #define EP_CDC_OUT   enum_ep2
 
-#define REQUEST_SET_ADDRESS    5
-#define REQUEST_GET_DESCRIPTOR 6
-#define REQUEST_SET_CONFIG     9
-
-#define REQUEST_SET_LINE_CODING        0x20
-#define REQUEST_GET_LINE_CODING        0x21
-#define REQUEST_SET_CONTROL_LINE_STATE 0x22
-
-
-#define DESCRIPTOR_DEVICE          1
-#define DESCRIPTOR_CONFIGURATION   2
-#define DESCRIPTOR_STRING          3
-#define DESCRIPTOR_INTERFACE       4
-#define DESCRIPTOR_ENDPOINT        5
-#define DESCRIPTOR_DEVICE_QUALIFIE 6
-#define DESCRIPTOR_INTERFACE_POWER 8
-
-#define CDC_REQ_WAITING_FOR_ENUMERATION 0x00
-#define CDC_REQ_SET_LINE_CODING         0x20
-#define CDC_REQ_GET_LINE_CODING         0x21
-#define CDC_REQ_SET_CONTROL_LINE_STATE  0x22
-#define CDC_REQ_LOADER_MODE             0xAA
-#define CDC_REQ_GET_INTERFACE           0x0A
-#define CDC_REQ_GET_STATUS              0x00
-#define CDC_REQ_CLEAR_FEATURE           0x01
-#define CDC_REQ_SET_FEATURE             0x03
 
 typedef enum
 {
@@ -54,19 +28,11 @@ typedef enum
 
 typedef enum
 {
-    enum_ep0,
-    enum_ep1,
-    enum_ep2,
-    enum_ep3
-}E_EP_LIST;
-
-typedef enum
-{
     enum_cmd_init,
     enum_cmd_set_line_coding
 }E_CMD_STATE;
 
-
+#pragma pack(push)
 #pragma pack(1)
 typedef struct
 {
@@ -75,7 +41,7 @@ typedef struct
     uint8_t   parity;
     uint8_t   bits;
 }S_CDC_LINE_CODING;
-#pragma pack()
+#pragma pack(pop)
 
 static uint8_t            s_usb_addr  = 0;
 static E_USB_STATE        s_usb_state = enum_default;
@@ -91,17 +57,17 @@ static void s_req_dev(S_SETUP * setup)
 {
     switch(setup->req)
     {
-        case REQUEST_SET_ADDRESS:
+        case REQ_SET_ADDR:
             debug_record_string("set address, ");
             s_usb_addr  = setup->value_l;
             s_usb_state = enum_set_addr;
             usb_hal_send(usb0, enum_ep0, 0, 0);
             break;
 
-        case REQUEST_GET_DESCRIPTOR:
+        case REQ_GET_DES:
             switch(setup->value_h)
             {
-                case DESCRIPTOR_DEVICE:
+                case DES_DEVICE:
                     debug_record_string("des, device");
                     usb_hal_send(usb0,
                                  enum_ep0,
@@ -109,7 +75,7 @@ static void s_req_dev(S_SETUP * setup)
                                  sizeof(device_descriptor));
                     break;
 
-                case DESCRIPTOR_CONFIGURATION:
+                case DES_CONFIGURATION:
                     debug_record_string("config");
                     usb_hal_send(usb0,
                                  enum_ep0,
@@ -117,7 +83,7 @@ static void s_req_dev(S_SETUP * setup)
                                  sizeof(config_descriptor));
                     break;
 
-                case DESCRIPTOR_STRING:
+                case DES_STRING:
                     debug_record_string("string");
                     usb_hal_send(usb0,
                                  enum_ep0,
@@ -131,7 +97,7 @@ static void s_req_dev(S_SETUP * setup)
             }
             break;
 
-        case REQUEST_SET_CONFIG:
+        case REQ_SET_CONFIG:
             // get this request means enumuation finished.
             // driver_usb_set_interface();
             s_usb_state = enum_configured;
@@ -148,15 +114,15 @@ static void s_req_cls(S_SETUP * setup)
 {
     switch(setup->req)
     {
-        case REQUEST_SET_CONTROL_LINE_STATE:
+        case REQ_CDC_SET_CONTROL_LINE_STATE:
             usb_hal_send(usb0, enum_ep0, 0, 0);
             break;
 
-        case REQUEST_GET_LINE_CODING:
+        case REQ_CDC_GET_LINE_CODING:
             usb_hal_send(usb0, enum_ep0, (uint8_t*)&s_line_coding, sizeof(s_line_coding));
             break;
 
-        case REQUEST_SET_LINE_CODING:
+        case REQ_CDC_SET_LINE_CODING:
             // prepare to set line coding in .
             s_cmd_state = enum_cmd_set_line_coding;
             usb_hal_send(usb0, enum_ep0, 0, 0);
@@ -237,15 +203,15 @@ static void s_process_ep_cdc(S_USB_PARA * para)
 
 void cdc_dev_init(void)
 {
-    s_usb_state          = enum_default;
+    s_usb_state = enum_default;
+    s_usb_addr  = 0;
+    s_usb_state = enum_default;
+    s_cmd_state = enum_cmd_init;
 
-    /* Line Coding Initialization */
     s_line_coding.dte_rate  = 9600;
     s_line_coding.format    = 0;
     s_line_coding.parity    = 0;
     s_line_coding.bits      = 0x08;
-
-    // driver_usb_set_ep_in(EP_IN);
 }
 
 void cdc_dev_entry(S_USB_PARA * para)
@@ -260,12 +226,17 @@ void cdc_dev_entry(S_USB_PARA * para)
     }
 }
 
-uint32_t rabbit_usb_cdc_dev_tx(uint32_t cdc_index, uint8_t* buf, uint32_t len)
+uint32_t rabbit_usb_cdc_dev_tx(E_CDC cdc, uint8_t* buf, uint32_t len)
 {
     uint8_t ep_tx;
 
-    // convert cdc_index to ep
-    ep_tx = EP_CDC_IN;
+    // enumerated?
+    if(s_usb_state != enum_configured)
+        return 0;
+
+    // convert cdc to ep
+    if(cdc == e_cdc0)
+        ep_tx = EP_CDC_IN;
 
     return usb_hal_send(usb0, ep_tx, buf, len);
 }

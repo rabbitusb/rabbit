@@ -110,6 +110,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/usb/class/usb_cls_cdc_dev.h" />
+		<Unit filename="../src/usb/driver/usb_driver.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../src/usb/driver/usb_driver.h" />
 		<Unit filename="../src/usb/usb_app.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -123,10 +127,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../src/usb/usb_debug.h" />
-		<Unit filename="../src/usb/usb_driver.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../src/usb/usb_driver.h" />
 		<Unit filename="../src/usb/usb_hal.c">
 			<Option compilerVar="CC" />
 		</Unit>

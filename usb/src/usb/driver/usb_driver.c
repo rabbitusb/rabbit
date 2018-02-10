@@ -3,14 +3,14 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
-#include "..\\hal\\MKL26Z4.h"
-#include "..\\hal\\hal_nvic.h"
-#include "usb_app.h"
-#include "usb_hal.h"
-#include "usb_driver.h"
-#include "usb_core_dev.h"
-#include "usb_debug.h"
-#include "usb_spec.h"
+#include "..\\..\\hal\\MKL26Z4.h"      // register definition
+#include "..\\usb_app.h"               // app callback importing
+#include "..\\usb_hal.h"               // need to construct S_USB_PARA for rabbit stack
+#include "usb_driver.h"                // need to use api in itself
+#include "..\\usb_core_dev.h"          // core entry call back
+#include "..\\usb_debug.h"             // debug printf
+#include "..\\usb_spec.h"              // use to judge PID
+#include "..\\..\\hal\\hal_nvic.h"     // use to enable IRQ
 
 #define USB_IRQ_NUMBER 0x18
 
@@ -60,21 +60,21 @@ typedef union
     {
         uint8_t :1;
         uint8_t :1;
-        uint8_t bstall:1;              //buffer stall enable
-        uint8_t dts:1;                 //data toggle synch enable
-        uint8_t ninc:1;                //address increment disable
-        uint8_t keep:1;                //bd keep enable
-        uint8_t data:1;                //data toggle synch value
-        uint8_t uown:1;                //usb ownership
+        uint8_t bstall:1;              // buffer stall enable
+        uint8_t dts:1;                 // data toggle synch enable
+        uint8_t ninc:1;                // address increment disable
+        uint8_t keep:1;                // bd keep enable
+        uint8_t data:1;                // data toggle synch value
+        uint8_t uown:1;                // usb ownership
     }flag1;
 
     struct
     {
         uint8_t    :2;
-        uint8_t pid:4;                 //Packet Identifier
+        uint8_t pid:4;
         uint8_t    :2;
     }flag2;
-} U_BD_FLAG;                         //Buffer Descriptor Status Register
+} U_BD_FLAG; // bd status register
 
 typedef struct
 {
@@ -93,7 +93,7 @@ __attribute__((aligned(512))) static S_BD bd_table[16]; // for 4 EP
 
 static uint8_t   ep_buf[BUF_SIZE_OF_ONE_EP * EP_COUNT * BUF_COUNT_IN_EACH_EP];
 static uint8_t * p_data;
-static uint32_t  counter;
+static uint32_t  send_count;
 
 // ------------------------------------------------
 static void update_toggle_data(void)
@@ -117,24 +117,24 @@ void driver_usb0_set_toggle_data1(void)
 static void s_store(uint8_t *data, uint32_t size)
 {
     // load happens when counter is 0
-    p_data  = data;
-    counter = size;
+    p_data     = data;
+    send_count = size;
 }
 
 static uint8_t s_load(void)
 {
     uint32_t r;
 
-    if(counter > EP_PACKAGE_SIZE)
+    if(send_count > EP_PACKAGE_SIZE)
     {
         // BUF_SIZE_OF_ONE_EP is the maximum package length for one transaction
-        r        = EP_PACKAGE_SIZE;
-        counter -= EP_PACKAGE_SIZE;
+        r           = EP_PACKAGE_SIZE;
+        send_count -= EP_PACKAGE_SIZE;
     }
     else
     {
-        r       = counter;
-        counter = 0;
+        r          = send_count;
+        send_count = 0;
     }
 
     return r;
@@ -271,6 +271,7 @@ static void s_bd_init(void)
 
 static void s_handler_reset(void)
 {
+    send_count = 0;
     driver_usb0_set_addr(0);
 }
 
@@ -296,28 +297,19 @@ static void s_usb_regulator_init(void)
 }
 
 // ------------------------------------------------
-
-void driver_usb0_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
+/*
+    return the bytes send out
+*/
+uint32_t driver_usb0_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
 {
     uint8_t  *p;
     uint32_t len;
     uint32_t ep_entry;
-    debug_record_string(", send, pack len:");
-    debug_record((char*)&buf_len, 1);
 
+    if(send_count > 0)
+        return 0;
 
-    /*
-        TX         ODD
-        USB->M     0
-        USB->M     1
-        M->USB     0
-        M->USB     1
-    */
-    ep_entry = ep*4 + 2; // + usb_tx_odd[ep];
-
-    debug_record_string(" ep_en:");
-    debug_record((char*)&ep_entry, 1);
-
+    ep_entry = ep*4 + 2;
     p = ep_buf + ep_entry*BUF_SIZE_OF_ONE_EP;  // 32 byte each ep.
 
     s_store(buf, buf_len);
@@ -347,6 +339,8 @@ void driver_usb0_send(uint8_t ep, uint8_t *buf, uint32_t buf_len)
         bd_table[ep_entry].bd_flag._byte = toggle_data;
         update_toggle_data();
     }
+
+    return buf_len;
 }
 
 
@@ -407,6 +401,7 @@ void driver_usb0_init(void)
     s_usb_clock_init();
     hal_nvic_enable_irq(USB_IRQ_NUMBER);
     s_bd_init();
+    send_count = 0;
 
     // Set BDT Base Register
     USB0->BDTPAGE1 = (uint8_t)((uint32_t)bd_table>>8);

@@ -260,14 +260,14 @@ void cdc_dev_entry(S_USB_PARA * para)
     }
 }
 
-void rabbit_usb_cdc_dev_tx(uint32_t cdc_index, uint8_t* buf, uint32_t len)
+uint32_t rabbit_usb_cdc_dev_tx(uint32_t cdc_index, uint8_t* buf, uint32_t len)
 {
     uint8_t ep_tx;
 
     // convert cdc_index to ep
     ep_tx = EP_CDC_IN;
 
-    usb_hal_send(usb0, ep_tx, buf, len);
+    return usb_hal_send(usb0, ep_tx, buf, len);
 }
 
 

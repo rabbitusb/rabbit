@@ -1,16 +1,18 @@
 
 #include <stdint.h>
-#include "usb_driver.h"
+#include "driver\\usb_driver.h"
 #include "usb_app.h"
 void usb_hal_init(E_USB usb)
 {
     if(usb == usb0)
         driver_usb0_init();
 }
-void usb_hal_send(E_USB usb, uint8_t ep, uint8_t *buf, uint32_t buf_len)
+uint32_t usb_hal_send(E_USB usb, uint8_t ep, uint8_t *buf, uint32_t buf_len)
 {
     if(usb == usb0)
-        driver_usb0_send(ep, buf, buf_len);
+        return driver_usb0_send(ep, buf, buf_len);
+    else
+        return 0;
 }
 void usb_hal_send_continous(E_USB usb, uint8_t ep)
 {
